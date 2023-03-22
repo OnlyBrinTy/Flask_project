@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Textform</title>
+</head>
+<header class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+    <p class="h5 my-0 me-md-auto fw-normal">Textform</p>
+    <nav class="my-2 my-md-0 me-md-3">
+    </nav>
+</header>
+<body>
+    <div id="field">
+        <textarea type="text" id="textarea" placeholder="Вставьте кусок текста"></textarea>    
+        <div id="div">
+            <span id="banner_1">Количество слов(до 500)</span>
+            <input type="text" id="input_1" placeholder="---" value="50">
+            <span id="banner_2">Температура(от 0.5 до 1.5)</span>
+            <input type="text" id="input_2" placeholder="-.-" value="1">
+            <span id="banner_3">Разные ответы</span>
+            <input type="checkbox" id="input_3">
+        </div>
+		<input type="button" id="button" value="Отправить" href=""/>
+	    <div class="cssload-thecube" id="loading">
+			<div class="cssload-cube cssload-c1"></div>
+			<div class="cssload-cube cssload-c2"></div>
+			<div class="cssload-cube cssload-c4"></div>
+			<div class="cssload-cube cssload-c3"></div>
+    	</div>
+    </div>
+
+</body>
+</html>
+<style>
+#field {
+    height: 70%;
+    width: 70%;
+    position: absolute;
+    margin-left: 15%;
+    margin-top: 2%;
+    padding: 3%;
+    border-radius: 10px;
+    background:rgb(245, 245, 245);
+}
+
+
+#div {
+    height: 13%;
+    width: 100%;
+    position: relative;
+    margin-top: 2%;
+    padding: 1%;
+    border-radius: 10px;
+    background:rgb(230, 230, 230);
+}
+
+
+#textarea {
+    width: 100%;
+    font-size: 2vw;
+    min-height: 60%;
+    max-height: 60%;
+    border-radius: 5px;
+    padding: 5px;
+    position: relative;
+}
+
+
+#input_1 {
+    width: 6%;
+    height: 100%;
+    font-size: 1.5vw;
+    border-radius: 5px;
+    padding: 5px;
+    position: relative;
+    margin-right:3% ;
+}
+
+
+#input_2 {
+    width: 6%;
+    height: 100%;
+    font-size: 1.5vw;
+    border-radius: 5px;
+    padding: 5px;
+    position: relative;
+    margin-right:3% ;
+}
+
+#input_3 {
+    width: 4%;
+    height: 50%;
+    position: relative;
+}
+
+
+#banner_1 {
+    font-size: 1.5vw;
+    position: relative;
+    font-family: sans-serif;
+
+}
+
+
+#banner_2 {
+    font-size: 1.5vw;
+    position: relative;
+    font-family: sans-serif;
+}
+
+#banner_3 {
+    font-size: 1.5vw;
+    position: relative;
+    font-family: sans-serif;
+}
+
+
+#button {
+    margin-top: 6%;
+    height: 9%;
+    width: 12%;
+    font-size: 1.1vw;
+    border-radius: 5px;
+    background:#0d6efd;
+    color: white;
+    border: none;
+    transition: 0.2s linear;
+}
+
+
+#button:hover {
+    color: #fff;
+    background: rgb(0, 0, 255);
+}
+
+.cssload-thecube {
+	display: none;
+	width: 3vw;
+	height: 3vw;
+	margin-left: 46%;
+	margin-top: -5%;
+	position: relative;
+	transform: rotateZ(45deg);
+		-o-transform: rotateZ(45deg);
+		-ms-transform: rotateZ(45deg);
+		-webkit-transform: rotateZ(45deg);
+		-moz-transform: rotateZ(45deg);
+}
+.cssload-thecube .cssload-cube {
+	position: relative;
+	transform: rotateZ(45deg);
+		-o-transform: rotateZ(45deg);
+		-ms-transform: rotateZ(45deg);
+		-webkit-transform: rotateZ(45deg);
+		-moz-transform: rotateZ(45deg);
+}
+.cssload-thecube .cssload-cube {
+	float: left;
+	width: 50%;
+	height: 50%;
+	position: relative;
+	transform: scale(1.1);
+		-o-transform: scale(1.1);
+		-ms-transform: scale(1.1);
+		-webkit-transform: scale(1.1);
+		-moz-transform: scale(1.1);
+}
+.cssload-thecube .cssload-cube:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #0d6efd;
+	animation: cssload-fold-thecube 1.92s infinite linear both;
+		-o-animation: cssload-fold-thecube 1.92s infinite linear both;
+		-ms-animation: cssload-fold-thecube 1.92s infinite linear both;
+		-webkit-animation: cssload-fold-thecube 1.92s infinite linear both;
+		-moz-animation: cssload-fold-thecube 1.92s infinite linear both;
+	transform-origin: 100% 100%;
+		-o-transform-origin: 100% 100%;
+		-ms-transform-origin: 100% 100%;
+		-webkit-transform-origin: 100% 100%;
+		-moz-transform-origin: 100% 100%;
+}
+.cssload-thecube .cssload-c2 {
+	transform: scale(1.1) rotateZ(90deg);
+		-o-transform: scale(1.1) rotateZ(90deg);
+		-ms-transform: scale(1.1) rotateZ(90deg);
+		-webkit-transform: scale(1.1) rotateZ(90deg);
+		-moz-transform: scale(1.1) rotateZ(90deg);
+}
+.cssload-thecube .cssload-c3 {
+	transform: scale(1.1) rotateZ(180deg);
+		-o-transform: scale(1.1) rotateZ(180deg);
+		-ms-transform: scale(1.1) rotateZ(180deg);
+		-webkit-transform: scale(1.1) rotateZ(180deg);
+		-moz-transform: scale(1.1) rotateZ(180deg);
+}
+.cssload-thecube .cssload-c4 {
+	transform: scale(1.1) rotateZ(270deg);
+		-o-transform: scale(1.1) rotateZ(270deg);
+		-ms-transform: scale(1.1) rotateZ(270deg);
+		-webkit-transform: scale(1.1) rotateZ(270deg);
+		-moz-transform: scale(1.1) rotateZ(270deg);
+}
+.cssload-thecube .cssload-c2:before {
+	animation-delay: 0.235s;
+		-o-animation-delay: 0.235s;
+		-ms-animation-delay: 0.235s;
+		-webkit-animation-delay: 0.235s;
+		-moz-animation-delay: 0.235s;
+}
+.cssload-thecube .cssload-c3:before {
+	animation-delay: 0.48s;
+		-o-animation-delay: 0.48s;
+		-ms-animation-delay: 0.48s;
+		-webkit-animation-delay: 0.48s;
+		-moz-animation-delay: 0.48s;
+}
+.cssload-thecube .cssload-c4:before {
+	animation-delay: 0.715s;
+		-o-animation-delay: 0.715s;
+		-ms-animation-delay: 0.715s;
+		-webkit-animation-delay: 0.715s;
+		-moz-animation-delay: 0.715s;
+}
+
+
+
+@keyframes cssload-fold-thecube {
+	0%, 10% {
+		transform: perspective(126px) rotateX(-180deg);
+		opacity: 0;
+	}
+	25%,
+				75% {
+		transform: perspective(126px) rotateX(0deg);
+		opacity: 1;
+	}
+	90%,
+				100% {
+		transform: perspective(126px) rotateY(180deg);
+		opacity: 0;
+	}
+}
+
+@-o-keyframes cssload-fold-thecube {
+	0%, 10% {
+		-o-transform: perspective(126px) rotateX(-180deg);
+		opacity: 0;
+	}
+	25%,
+				75% {
+		-o-transform: perspective(126px) rotateX(0deg);
+		opacity: 1;
+	}
+	90%,
+				100% {
+		-o-transform: perspective(126px) rotateY(180deg);
+		opacity: 0;
+	}
+}
+
+@-ms-keyframes cssload-fold-thecube {
+	0%, 10% {
+		-ms-transform: perspective(126px) rotateX(-180deg);
+		opacity: 0;
+	}
+	25%,
+				75% {
+		-ms-transform: perspective(126px) rotateX(0deg);
+		opacity: 1;
+	}
+	90%,
+				100% {
+		-ms-transform: perspective(126px) rotateY(180deg);
+		opacity: 0;
+	}
+}
+
+@-webkit-keyframes cssload-fold-thecube {
+	0%, 10% {
+		-webkit-transform: perspective(126px) rotateX(-180deg);
+		opacity: 0;
+	}
+	25%,
+				75% {
+		-webkit-transform: perspective(126px) rotateX(0deg);
+		opacity: 1;
+	}
+	90%,
+				100% {
+		-webkit-transform: perspective(126px) rotateY(180deg);
+		opacity: 0;
+	}
+}
+
+@-moz-keyframes cssload-fold-thecube {
+	0%, 10% {
+		-moz-transform: perspective(126px) rotateX(-180deg);
+		opacity: 0;
+	}
+	25%,
+				75% {
+		-moz-transform: perspective(126px) rotateX(0deg);
+		opacity: 1;
+	}
+	90%,
+				100% {
+		-moz-transform: perspective(126px) rotateY(180deg);
+		opacity: 0;
+	}
+}
+</style>
+<script>
+	var loading = document.getElementById("loading");
+	var textarea = document.getElementById("textarea");
+	var button = document.getElementById("button");
+	button.onclick = function() {
+		ajax();
+	}
+
+	function sleep(ms) {
+  		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	function fade(counter, text)
+	{
+		loading.style.opacity = counter / 100;
+		if (counter > 0) {
+			setTimeout(function() {
+				fade(counter - 1, text);
+			}, 10);
+		}
+		else{			
+			loading.style.display = "none";
+			loading.style.opacity = 1;
+            textarea.value = text;
+		}
+	}
+
+function ajax() {
+	loading.style.display = "block";
+
+    var value = $('#textarea').val();
+    var inp_1_value = $('#input_1').val();
+    var inp_2_value = $('#input_2').val();
+    var inp_3_value = $('#input_3').val();
+	var inp_data = {'value': value, 'inp_1_value': inp_1_value, 'inp_2_value': inp_2_value, 'inp_3_value': inp_3_value};
+
+
+    $.ajax({
+		type: 'POST',
+		url: '/button_press',
+		data: JSON.stringify(inp_data),
+		contentType: 'application/json;charset=UTF-8',
+        success : function(text)
+        {
+			fade(100, text);
+        }
+
+    });
+}
+</script>
