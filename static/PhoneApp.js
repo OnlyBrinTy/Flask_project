@@ -28,10 +28,10 @@ function filling(outp_data) {
   var title_10 = document.getElementById('t10');
 
   for (let i = 1; i < 11; i++) {
-    eval(`author_${i}`).innerHTML = `${outp_data.DATA_author[i - 1]}`;
+    eval(`author_${i}`).innerHTML = `${outp_data.authors[i - 1]}`;
   }
   for (let i = 1; i < 11; i++) {
-    eval(`title_${i}`).innerHTML = `${outp_data.DATA_title[i - 1]}`;
+    eval(`title_${i}`).innerHTML = `${outp_data.titles[i - 1]}`;
   }
 }
 
