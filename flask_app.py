@@ -1,8 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from parse import ParseApp
 
 app = Flask(__name__)
-parse_app = ParseApp('https://republic.ru/')
+parse_app = ParseApp('https://republic.ru')
 
 
 @app.route('/DATA_authors_and_titles', methods=['POST'])
@@ -20,12 +20,12 @@ def text_data_load():
     return response
 
 
-@app.route('/ActionPage', methods=['GET'])
+@app.route('/ActionPage')
 def action_page_load():
     return render_template('PhoneAppSecondPage.html')
 
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def first_page_load():
     return render_template('index.html')
 
@@ -41,4 +41,4 @@ def final_result_load():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run()

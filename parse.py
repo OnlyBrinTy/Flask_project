@@ -5,6 +5,10 @@ import pymorphy2
 from bs4 import BeautifulSoup
 
 NUM_ARTICLES_TO_PARSE = 10
+PROXIES = {
+    'https': 'http://65.109.136.135:8080',
+    'http': 'http://151.80.136.138:3128'
+}
 
 
 class ParseApp:
@@ -14,10 +18,12 @@ class ParseApp:
         self.timer = 0
         self.host = host
 
+        self.get_articles()
+
     def get_articles(self):
         lapse = time.time() - self.timer
 
-        if lapse >= self.update_interval or not self.timer:
+        if lapse >= self.update_interval:
             self.get_new_articles(50, NUM_ARTICLES_TO_PARSE)
             self.timer = time.time()
 
@@ -32,23 +38,22 @@ class ParseApp:
         self.articles_content = {}
 
         while attempts_num and len(titles) < titles_num:
-            post_url = f'{self.host}/posts/{last_post - i}'
-            html = self.get_html(post_url)
+            attempts_num -= 1
 
+            post_url = f'{self.host}/posts/{last_post - attempts_num}'
+            html = self.get_html(post_url)
             author = self.get_author(html.text)
             title = self.get_title(html.text)
 
-            if author == title:
-                print(author, title)
-                continue
-            elif not author and title:
+            if not author:
+                if not title:
+                    continue
+
                 author = 'Нет автора'
 
             authors.append(author)
             titles.append(title)
             self.articles_content[post_url] = ''
-
-        assert len(self.articles_urls) == NUM_ARTICLES_TO_PARSE
 
         self.articles_covers = {'authors': authors, 'titles': titles}
 
@@ -62,41 +67,39 @@ class ParseApp:
         return {'_': similarity}
 
     def get_articles_content(self, button_id):
-        url_of_article = self.articles_content.keys()[button_id - 1]
+        url_of_article = list(self.articles_content)[button_id - 1]
 
         if not self.articles_content[url_of_article]:
-            html_of_article = self.get_html(url_of_an_article)
+            html_of_article = self.get_html(url_of_article)
             self.articles_content[url_of_article] = self.get_text(html_of_article.text)
 
         return {'_': self.articles_content[url_of_article]}
 
     def get_author(self, html_text):
         soup = BeautifulSoup(html_text, 'html.parser')
-        items = soup.find_all('div', class_='post-authors__name')
-        author = ''
-
-        for item in items:
-            author = item.text.strip()
+        item = soup.find('div', class_='post-authors__name')
+        author = item.text.strip() if item else None
 
         return author
 
     @staticmethod
     def get_title(html_text):
         soup = BeautifulSoup(html_text, 'html.parser')
-        items = soup.find_all('h1', class_='post-title')
-        titles = ''
+        item = soup.find('h1', class_='post-title')
+        title = item.text.replace('\xa0', ' ').strip() if item else None
 
-        for item in items:
-            text = item.text
-            text = text.replace('\xa0', ' ').strip()
-            titles = text
-
-        return titles
+        return title
 
     @staticmethod
     def get_text(html):
-        return ''.join(p.get_text() for p in BeautifulSoup(html, 'html.parser').
-                       find('div', class_='free-content').contents if len(p.text) > 100)
+        soup = BeautifulSoup(html, 'html.parser').find('div', class_='free-content').contents
+
+        paragraphs = []
+        for p in soup:
+            if len(p.text) > 100:
+                paragraphs.append(p.get_text())
+
+        return paragraphs
 
     def get_post(self, page):
         soup = BeautifulSoup(page.text, 'html.parser')
@@ -105,8 +108,8 @@ class ParseApp:
 
         return last_post
 
-    def get_html(self, url, parameters=''):
-        return requests.get(url, params=parameters)
+    def get_html(self, url):
+        return requests.get(url, proxies=PROXIES, verify=False)
 
     def get_bgramms(self, tokens):
         return tuple((tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1))
