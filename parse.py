@@ -5,10 +5,6 @@ import pymorphy2
 from bs4 import BeautifulSoup
 
 NUM_ARTICLES_TO_PARSE = 10
-PROXIES = {
-    'https': 'http://65.109.136.135:8080',
-    'http': 'http://151.80.136.138:3128'
-}
 
 
 class ParseApp:
@@ -109,7 +105,7 @@ class ParseApp:
         return last_post
 
     def get_html(self, url):
-        return requests.get(url, proxies=PROXIES, verify=False)
+        return requests.get(url)
 
     def get_bgramms(self, tokens):
         return tuple((tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1))
