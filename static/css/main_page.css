@@ -1,0 +1,33 @@
+#articles_panel {
+    width: 100%;
+    position:absolute;
+    display: none;
+}
+
+.case {
+    box-shadow: 0 3px 10px;
+    position: relative;
+    width: 80%;
+    padding: 10%;
+    padding-top: 4%;
+}
+
+.case:hover {
+    background-color: #002d801e
+}
+
+.author {
+    font-size: 6vw;
+    font-family: cursive;
+    margin-bottom: 2%;
+    text-align: right;
+	user-select:none
+}
+
+.title {
+    position: relative;
+    font-size: 7vw;
+    font-family: monospace;
+    font-weight: bold;
+	user-select:none
+}
