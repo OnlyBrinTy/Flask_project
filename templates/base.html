@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for( 'static', filename='samples/favicon.png')}}" sizes="16x16" type="image/png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/base.css">
+    <link rel="stylesheet" type="text/css" href="static/css/{{ css_file_name }}">
+    <script src="static/js/base.js"></script>
+    <script src="static/js/{{ js_file_name }}"></script>
+    <title>Speak Charger</title>
+</head>
+<header class="content">
+    <div class='space'></div>
+    <div id='header_title'>
+        Speak Charger
+    </div>
+</header>
+<body>
+    <span class="cssload-loader" id='loading'><span class="cssload-loader-inner" ></span></span>
+    {% block content %} {% endblock %}
+</body>
+</html>

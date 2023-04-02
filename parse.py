@@ -1,45 +1,95 @@
+from itertools import chain, islice
+from bs4 import BeautifulSoup, Tag
 import requests
 import time
-import string
-import pymorphy2
-from bs4 import BeautifulSoup
 
-NUM_ARTICLES_TO_PARSE = 10
+HEADERS = {
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 OPR/73.0.3856.415'
+}
+PROXIES = {
+    'https': 'http://94.131.114.69:3128',
+    'http': 'http://51.15.242.202:8888'
+}
+
+
+def batched(iterable, n):
+    i = iter(iterable)
+    piece = list(islice(i, n))
+    while piece:
+        yield ' '.join(piece)
+        piece = list(islice(i, n))
 
 
 class ParseApp:
     update_interval = 86400
 
-    def __init__(self, host):
-        self.timer = 0
+    def __init__(self, host: str, num_articles_to_parse: int):
+        self.num_articles_to_parse = num_articles_to_parse
         self.host = host
 
-        self.get_articles()
+        self.timer = 0
+        self.chunk_size = 45
 
-    def get_articles(self):
+        self.update_articles()
+
+    def update_articles(self):
         lapse = time.time() - self.timer
 
         if lapse >= self.update_interval:
-            self.get_new_articles(50, NUM_ARTICLES_TO_PARSE)
+            self.get_content(50, self.num_articles_to_parse)
             self.timer = time.time()
 
         return self.articles_covers
 
-    def get_new_articles(self, attempts_num, titles_num):
-        page = self.get_html(self.host)
-        last_post = self.get_post(page)
+    def get_content(self, attempts_num, titles_num):
+        def get_last_article(soup):
+            items = soup.find('a', class_='card__link').get('href')
+            last_post = int(items.replace('/posts/', ''))
 
-        authors = []
-        titles = []
+            return last_post
+
+        def get_author(soup):
+            item = soup.find('div', class_='post-authors__name')
+            author_name = item.text.strip() if item else None
+
+            return author_name
+
+        def get_title(soup):
+            item = soup.find('h1', class_='post-title')
+            title_name = item.text.replace('\xa0', ' ').strip() if item else None
+
+            return title_name
+
+        def get_content(soup, chunk_size):
+            extra_classes = ('caption', 'credit')
+
+            item = soup.find('div', class_='free-content')
+            paragraphs = item.find_all('p', class_=lambda c: c not in extra_classes)
+
+            words = ' '.join(map(Tag.get_text, paragraphs)).split()
+            chunks = list(batched(words, chunk_size))
+            if len(chunks[-1]) < self.chunk_size * 3:
+                chunks[-1] = chunks[-2] + chunks.pop()
+
+            return chunks
+
+        main_page_html = self.get_html(self.host)
+        main_page_soup = BeautifulSoup(main_page_html.text, 'html.parser')
+        last_post_id = get_last_article(main_page_soup)
+
+        self.articles_covers = []
         self.articles_content = {}
 
-        while attempts_num and len(titles) < titles_num:
+        while attempts_num and len(self.articles_covers) < titles_num:
             attempts_num -= 1
 
-            post_url = f'{self.host}/posts/{last_post - attempts_num}'
-            html = self.get_html(post_url)
-            author = self.get_author(html.text)
-            title = self.get_title(html.text)
+            article_url = f'{self.host}/posts/{last_post_id - attempts_num}'
+            article_html = self.get_html(article_url)
+            article_soup = BeautifulSoup(article_html.text, 'html.parser')
+
+            author = get_author(article_soup)
+            title = get_title(article_soup)
 
             if not author:
                 if not title:
@@ -47,73 +97,16 @@ class ParseApp:
 
                 author = 'Нет автора'
 
-            authors.append(author)
-            titles.append(title)
-            self.articles_content[post_url] = ''
+            content = get_content(article_soup, self.chunk_size)
 
-        self.articles_covers = {'authors': authors, 'titles': titles}
-
-    def get_correct_text(self, aud_txt, rel_txt):
-        aud_tok, real_tok = self.delete_extra_parts(aud_txt), self.delete_extra_parts(rel_txt)
-        aud_bgram, real_bgram = self.get_bgramms(aud_tok), self.get_bgramms(real_tok)
-
-        comparison = [g in real_bgram for g in aud_bgram]
-        similarity = comparison.count(True) / len(comparison)
-
-        return {'_': similarity}
+            self.articles_covers.append((author, title))
+            self.articles_content[article_url] = content
 
     def get_articles_content(self, button_id):
-        url_of_article = list(self.articles_content)[button_id - 1]
+        article_url = list(self.articles_content)[button_id - 1]
 
-        if not self.articles_content[url_of_article]:
-            html_of_article = self.get_html(url_of_article)
-            self.articles_content[url_of_article] = self.get_text(html_of_article.text)
-
-        return {'_': self.articles_content[url_of_article]}
-
-    def get_author(self, html_text):
-        soup = BeautifulSoup(html_text, 'html.parser')
-        item = soup.find('div', class_='post-authors__name')
-        author = item.text.strip() if item else None
-
-        return author
+        return self.articles_content[article_url]
 
     @staticmethod
-    def get_title(html_text):
-        soup = BeautifulSoup(html_text, 'html.parser')
-        item = soup.find('h1', class_='post-title')
-        title = item.text.replace('\xa0', ' ').strip() if item else None
-
-        return title
-
-    @staticmethod
-    def get_text(html):
-        soup = BeautifulSoup(html, 'html.parser').find('div', class_='free-content').contents
-
-        paragraphs = []
-        for p in soup:
-            if len(p.text) > 100:
-                paragraphs.append(p.get_text())
-
-        return paragraphs
-
-    def get_post(self, page):
-        soup = BeautifulSoup(page.text, 'html.parser')
-        items = soup.find('a', class_='card__link').get('href')
-        last_post = int(items.replace('/posts/', ''))
-
-        return last_post
-
-    def get_html(self, url):
-        return requests.get(url)
-
-    def get_bgramms(self, tokens):
-        return tuple((tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1))
-
-    def delete_extra_parts(self, text):
-        morph = pymorphy2.MorphAnalyzer()
-        tokens = text.translate(str.maketrans('', '', string.punctuation)).lower().split()
-        clear_tokens = tuple(
-            filter(lambda x: morph.parse(x)[0].tag.POS not in ('CONJ', 'PRCL', 'INTJ', 'PREP'), tokens))
-
-        return clear_tokens
+    def get_html(url):
+        return requests.get(url, headers=HEADERS, proxies=PROXIES, verify=False)
