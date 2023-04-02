@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="articles_panel" class="content">
+        {% for author, title in articles_covers %}
+            <div onclick="href({{ loop.index }})" class='case'>
+                <div id='a{{ loop.index }}' class='author'>{{ author }}</div>
+                <hr>
+                <div id='t{{ loop.index }}' class='title'>{{ title }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="tasks_panel" class="content">
+        {% for paragraph in paragraphs %}
+            <div class="{% if loop.index > 1 %}indent{% endif %}" id="paragraph_{{ loop.index }}">
+                <a id="{{ loop.index }}">{{ paragraph }}</a>
+                <div class="start_button" id="button_{{ loop.index }}" onclick="start_listening({{ loop.index }})">Start</div>
+                <div class="loadFacebookG" id="loadFacebookG_{{ loop.index }}">
+                    <div id="blockG_1" class="facebook_blockG"></div>
+                    <div id="blockG_2" class="facebook_blockG"></div>
+                    <div id="blockG_3" class="facebook_blockG"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

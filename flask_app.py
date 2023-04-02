@@ -1,41 +1,40 @@
 from flask import Flask, render_template, request
+from text_analysis import get_correct_text
+from blinker import Namespace
 from parse import ParseApp
 
 app = Flask(__name__)
-parse_app = ParseApp('https://republic.ru')
+parse_app = ParseApp('https://republic.ru', 10)
 
 
-@app.route('/DATA_authors_and_titles', methods=['POST'])
-def first_data_load():
-    response = parse_app.get_articles()
-
-    return response
-
-
-@app.route('/DATA_request', methods=['POST'])
-def text_data_load():
-    button_id = int(request.args.get('param'))
-    response = parse_app.get_articles_content(button_id)
-
-    return response
-
-
-@app.route('/ActionPage')
+@app.route('/target')
 def action_page_load():
-    return render_template('PhoneAppSecondPage.html')
+    button_id = int(request.args.get('post'))
+    articles = parse_app.get_articles_content(button_id)
+
+    params = {'css_file_name': 'articles_page.css',
+              'js_file_name': 'articles_page.js',
+              'paragraphs': articles}
+
+    return render_template('articles_page.html', **params)
 
 
 @app.route('/')
 def first_page_load():
-    return render_template('index.html')
+    params = {'css_file_name': 'main_page.css',
+              'js_file_name': 'main_page.js',
+              'articles_covers': parse_app.articles_covers}
+
+    return render_template('main_page.html', **params)
 
 
-@app.route('/DATA_audio_text', methods=['POST'])
+@app.route('/DATA_text_from_speech', methods=['POST'])
 def final_result_load():
     req = request.json
     audio_repeat = req['audio']
     text = req['text']
-    response_result = parse_app.get_correct_text(audio_repeat, text)
+
+    response_result = get_correct_text(audio_repeat, text)
 
     return response_result
 
