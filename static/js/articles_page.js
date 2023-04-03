@@ -1,6 +1,7 @@
 var speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 var listening_animation;
 var is_recognizing;
+var paragraph_id;
 var recognition;
 var paragraph;
 var button;
@@ -12,11 +13,18 @@ function send_text_to_server(audio_output, paragraph_text) {
         url: '/DATA_text_from_speech',
         data: JSON.stringify({"audio": audio_output, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
-        success : function(similarity)
-        {
-            alert(similarity);
-        }
+        success : fill_result(difference)
     });
+}
+
+
+function fill_result(outp_data) {
+    let curr_div = document.getElementById(`button_${paragraph_id}`);
+    curr_div.firstElementChild.remove()
+    let new_elem = document.createElement('div');
+    new_elem.innerHTML = outp_data.trim();
+
+    curr_div.prepend(new_elem)
 }
 
 
