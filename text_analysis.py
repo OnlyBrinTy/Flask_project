@@ -1,5 +1,11 @@
+import requests
 import pymorphy3
 import string
+
+URL = 'https://api.diffchecker.com/public/text?output_type=html&email=onlybrinty@mail.ru'
+HEADERS = {
+    'Content-type': 'application/json'
+}
 
 
 def delete_extra_parts(text):
@@ -23,3 +29,13 @@ def get_correct_text(aud_txt, rel_txt):
     similarity = comparison.count(True) / len(comparison)
 
     return similarity
+
+
+def post_request(text1, text2):
+    data = {"left": text1,
+            "right": text2,
+            "diff_level": "word"}
+
+    response = requests.post(URL, json=data, headers=HEADERS)
+
+    return response.text

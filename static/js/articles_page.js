@@ -1,6 +1,7 @@
 var speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 var listening_animation;
 var is_recognizing;
+var paragraph_id;
 var recognition;
 var paragraph;
 var button;
@@ -12,24 +13,36 @@ function send_text_to_server(audio_output, paragraph_text) {
         url: '/DATA_text_from_speech',
         data: JSON.stringify({"audio": audio_output, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
-        success : function(similarity)
+        success :  function(difference)
         {
-            alert(similarity);
+            fill_result(difference);
         }
     });
 }
 
 
-function start_listening(paragraph_id) {
-    listening_animation = document.getElementById(`loadFacebookG_${paragraph_id}`);
+function fill_result(outp_data) {
+    let curr_div = document.getElementById(`paragraph_${paragraph_id}`);
+    curr_div.firstElementChild.remove()
+    let new_elem = document.createElement('div');
+    new_elem.innerHTML = outp_data.trim();
+
+    curr_div.prepend(new_elem)
+}
+
+
+function start_listening(id) {
+    paragraph_id = id
+
+    listening_animation = document.getElementById(`loadFacebookG_${id}`);
     listening_animation.style.display = 'flex';
 
-    button = document.getElementById(`button_${paragraph_id}`);
+    button = document.getElementById(`button_${id}`);
     button.className = 'stop_button';
     button.innerHTML = 'Stop';
-    button.setAttribute('onclick', `stop_listening(${paragraph_id})`);
+    button.setAttribute('onclick', `stop_listening(${id})`);
 
-    paragraph = document.getElementById(`paragraph_${paragraph_id}`).firstElementChild;
+    paragraph = document.getElementById(`paragraph_${id}`).firstElementChild;
     paragraph_text = paragraph.innerHTML
     paragraph.innerHTML = 'Speak...'
 
@@ -37,12 +50,14 @@ function start_listening(paragraph_id) {
 }
 
 
-function stop_listening(paragraph_id) {
+function stop_listening(id) {
+    paragraph_id = id
+
     listening_animation.style.display = 'none';
 
     button.className = "start_button";
     button.innerHTML = 'Start';
-    button.setAttribute('onclick', `start_listening(${paragraph_id})`);
+    button.setAttribute('onclick', `start_listening(${id})`);
 
     stop_recognition();
 }

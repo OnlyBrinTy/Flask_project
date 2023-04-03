@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from text_analysis import get_correct_text
+from text_analysis import post_request
 from blinker import Namespace
 from parse import ParseApp
 
@@ -34,7 +34,7 @@ def final_result_load():
     audio_repeat = req['audio']
     text = req['text']
 
-    response_result = get_correct_text(audio_repeat, text)
+    response_result = post_request(audio_repeat, text)
 
     return response_result
 
