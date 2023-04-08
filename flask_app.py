@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 from text_analysis import post_request
-from blinker import Namespace
 from parse import ParseApp
 
 app = Flask(__name__)

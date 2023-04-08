@@ -1,4 +1,4 @@
-from itertools import chain, islice
+from itertools import islice
 from bs4 import BeautifulSoup, Tag
 import requests
 import time
@@ -39,6 +39,7 @@ class ParseApp:
         return self.articles_covers
 
     def get_content(self, attempts_num, titles_num):
+        start = time.time()
         def get_last_article(soup):
             items = soup.find('a', class_='card__link').get('href')
             last_post = int(items.replace('/posts/', ''))
@@ -97,6 +98,7 @@ class ParseApp:
 
             self.articles_covers.append((author, title))
             self.articles_content[article_url] = content
+        print(time.time() - start)
 
     def get_articles_content(self, button_id):
         article_url = list(self.articles_content)[button_id - 1]

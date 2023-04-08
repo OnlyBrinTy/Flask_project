@@ -1,99 +1,112 @@
 var speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 var listening_animation;
 var is_recognizing;
+var paragraph_text;
 var paragraph_id;
-var recognition;
-var paragraph;
+var mic_button;
+var textarea;
+var curr_div;
 var button;
 
 
-function send_text_to_server(audio_output, paragraph_text) {
-    $.ajax({ 
+function send_text_to_server() {
+    $.ajax({
         type: 'POST',
         url: '/DATA_text_from_speech',
-        data: JSON.stringify({"audio": audio_output, "text": paragraph_text}),
+        data: JSON.stringify({"audio": textarea.value, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
-        success : fill_result(difference)
+        success: function(response) {end_reciting(response)}
     });
 }
 
 
-function fill_result(outp_data) {
-    let curr_div = document.getElementById(`button_${paragraph_id}`);
-    curr_div.firstElementChild.remove()
-    let new_elem = document.createElement('div');
-    new_elem.innerHTML = outp_data.trim();
-
-    curr_div.prepend(new_elem)
+function replace_first_child(new_elem) {
+    curr_div.firstElementChild.remove();
+    curr_div.prepend(new_elem);
 }
 
+function start_reciting(id) {
+    if (is_recognizing) {
+        stop_listening()
+    }
 
-function start_listening(paragraph_id) {
+    paragraph_id = id;
+
+    button = document.getElementById(`button_${id}`);
+    button.className = 'stop_button';
+    button.innerHTML = 'Stop';
+    button.setAttribute('onclick', `send_text_to_server()`);
+
+    mic_button = document.getElementById(`mic_${id}`);
+    mic_button.style.display = 'block';
+
+    curr_div = document.getElementById(`paragraph_${id}`);
+    paragraph_text = curr_div.firstElementChild.innerHTML
+
+    textarea = document.createElement('textarea')
+    textarea.id = `textarea_${id}`
+
+    replace_first_child(textarea)
+}
+
+function end_reciting(difference_html) {
+    let new_elem = document.createElement('div');
+    new_elem.innerHTML = difference_html.trim();
+
+    replace_first_child(new_elem);
+}
+
+function start_listening() {
     listening_animation = document.getElementById(`loadFacebookG_${paragraph_id}`);
     listening_animation.style.display = 'flex';
 
-    button = document.getElementById(`button_${paragraph_id}`);
-    button.className = 'stop_button';
-    button.innerHTML = 'Stop';
-    button.setAttribute('onclick', `stop_listening(${paragraph_id})`);
+    mic_button.setAttribute('onclick', `stop_listening()`);
+    mic_button.className = 'mic_listening';
 
-    paragraph = document.getElementById(`paragraph_${paragraph_id}`).firstElementChild;
-    paragraph_text = paragraph.innerHTML
-    paragraph.innerHTML = 'Speak...'
-
-    get_text_from_speech(paragraph_text);
+    recognize_speech(paragraph_text, textarea);
 }
 
 
-function stop_listening(paragraph_id) {
+function stop_listening() {
     listening_animation.style.display = 'none';
 
-    button.className = "start_button";
-    button.innerHTML = 'Start';
-    button.setAttribute('onclick', `start_listening(${paragraph_id})`);
+    mic_button.setAttribute('onclick', `start_listening(${paragraph_id})`);
+    mic_button.className = 'mic_button';
 
     stop_recognition();
 }
 
 
-async function get_text_from_speech(paragraph_text) {
-    recognition = new speechRecognition()
-    recognition.continuous = true
-    recognition.interimResults = false
-    recognition.maxAlternatives = 3
-    recognition.lang = 'ru-RU'
+async function recognize_speech(paragraph_text, field_to_save) {
+    recognition = new speechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 3;
+    recognition.lang = 'ru-RU';
 
     is_recognizing = true
-    let final_transcript = ''
-
     recognition.start();
+
+    let non_final_transcript_len = 0
 
     recognition.onresult = (event) => {
         var last = event.results.length - 1;
 
-        if(event.results[last].isFinal && event.results[last][0].confidence >= 0.7) {
-            final_transcript += event.results[last][0].transcript + ' ';
+        if (event.results[last].isFinal && event.results[last][0].confidence >= 0.7) {
+            field_to_save.value += event.results[last][0].transcript + ' ';
         }
     }
- 
+
     recognition.onend = () => {
         if (is_recognizing) {
-            recognition.start()
-        }
-        else {
-            final_transcript = final_transcript.slice(0, -1)
-            if (final_transcript.length < 10) {
-                alert('Слишком короткое сообщение')
-                return;
-            }
-
-            send_text_to_server(final_transcript, paragraph_text)
+            recognition.start();
         }
     }
 }
 
 
 function stop_recognition() {
-    recognition.stop()
-    is_recognizing = false
+    is_recognizing = false;
+    recognition.stop();
 }
