@@ -8,12 +8,21 @@ var textarea;
 var curr_div;
 var button;
 
+function send_delete_signal() {
+    $.ajax({
+        type: 'POST',
+        url: '/DATA_delete_paragraph',
+        data: JSON.stringify({'id': paragraph_id}),
+        contentType: 'application/json;charset=UTF-8',
+        success: function(response) {close_block(response['article_is_empty'])}
+    });
+}
 
 function send_text_to_server() {
     $.ajax({
         type: 'POST',
         url: '/DATA_text_from_speech',
-        data: JSON.stringify({"audio": textarea.value, "text": paragraph_text}),
+        data: JSON.stringify({"transcript": textarea.value, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
         success: function(response) {end_reciting(response)}
     });
@@ -33,8 +42,8 @@ function start_reciting(id) {
     paragraph_id = id;
 
     button = document.getElementById(`button_${id}`);
-    button.className = 'stop_button';
-    button.innerHTML = 'Stop';
+    button.className = 'send_button';
+    button.innerHTML = 'Отправить';
     button.setAttribute('onclick', `send_text_to_server()`);
 
     mic_button = document.getElementById(`mic_${id}`);
@@ -50,10 +59,44 @@ function start_reciting(id) {
 }
 
 function end_reciting(difference_html) {
-    let new_elem = document.createElement('div');
-    new_elem.innerHTML = difference_html.trim();
+    if (is_recognizing) {
+        stop_listening()
+    }
 
-    replace_first_child(new_elem);
+    let diff_table = document.createElement('div');
+    diff_table.innerHTML = difference_html;
+
+    replace_first_child(diff_table);
+
+    button.className = 'start_button';
+    button.innerHTML = 'Закрыть';
+    button.setAttribute('onclick', `send_delete_signal()`);
+
+    mic_button.style.display = 'none';
+}
+
+function close_block(article_is_empty) {
+    if (article_is_empty) {
+        let ending_label = document.createElement('h1')
+        ending_label.innerHTML = 'Отлично! Вы всё выполнили.';
+
+        replace_first_child(ending_label)
+
+        button.setAttribute('onclick', `return_to_home_page()`);
+    }
+    else {
+        curr_div.remove()
+        let next_block = document.getElementById(`paragraph_${paragraph_id + 1}`)
+
+        if (next_block) {
+            next_block.className = ''
+        }
+    }
+}
+
+function return_to_home_page() {
+    url = '/';
+    window.open(url, '_self');
 }
 
 function start_listening() {

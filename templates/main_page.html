@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div id="articles_panel" class="content">
+    <div id="articles_panel">
         {% for author, title in articles_covers %}
             <div onclick="href({{ loop.index }})" class='case'>
                 <div id='a{{ loop.index }}' class='author'>{{ author }}</div>
