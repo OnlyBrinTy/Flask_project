@@ -15,13 +15,12 @@ def batched(iterable, n):
 class ParseApp:
     update_interval = 86400
 
-    def __init__(self, host: str, num_articles_to_parse: int):
-        self.num_articles_to_parse = num_articles_to_parse
+    def __init__(self, host: str, titles_num: int):
         self.host = host
+        self.titles_num = titles_num
 
         self.timer = 0
         self.chunk_size = 30
-        self.titles_num = 10
         self.articles_covers = []
         self.articles_content = {}
 
