@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, redirect
 from text_analysis import post_request
 from parse import ParseApp
-from data import db_session
-from data.users import User
-from form import LoginForm, RegisterForm
+# from data import db_session
+# from data.users import User
+# from form import LoginForm, RegisterForm
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 parse_app = ParseApp('https://republic.ru', 10)
 
 
@@ -24,9 +25,10 @@ def article_page_load():
 
 @app.route('/')
 def home_page_load():
+    articles_covers = parse_app.load_articles_covers()
     params = {'css_file_name': 'main_page.css',
               'js_file_name': 'main_page.js',
-              'articles_covers': parse_app.articles_covers}
+              'articles_covers': articles_covers}
 
     return render_template('main_page.html', **params)
 
