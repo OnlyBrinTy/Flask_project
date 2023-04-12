@@ -14,6 +14,7 @@ function send_delete_signal() {
         url: '/DATA_delete_paragraph',
         data: JSON.stringify({'id': paragraph_id}),
         contentType: 'application/json;charset=UTF-8',
+        cache: false,
         success: function(response) {close_block(response['article_is_empty'])}
     });
 }
@@ -24,6 +25,7 @@ function send_text_to_server() {
         url: '/DATA_text_from_speech',
         data: JSON.stringify({"transcript": textarea.value, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
+        cache: false,
         success: function(response) {end_reciting(response)}
     });
 }
