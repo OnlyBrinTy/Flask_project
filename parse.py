@@ -2,6 +2,9 @@ from itertools import islice
 from bs4 import BeautifulSoup, Tag
 import requests
 import time
+from data import db_session
+from data.articles import Article
+from data.paragraph import Paragraph
 
 
 def batched(iterable, n):
@@ -21,8 +24,9 @@ class ParseApp:
 
         self.timer = 0
         self.chunk_size = 30
-        self.articles_covers = []
-        self.articles_content = {}
+
+        db_session.global_init('db/database.db')
+        self.session = db_session.create_session()
 
         self.update_articles()
 
@@ -34,10 +38,12 @@ class ParseApp:
             main_page_soup = BeautifulSoup(main_page_html.text, 'html.parser')
             self.curr_post_id = self.get_last_article(main_page_soup)
 
+            self.clear_db()
+
             self.get_content()
             self.timer = time.time()
 
-    def get_content(self):
+    def get_content(self, articles_added=0):
         def get_author(soup):
             item = soup.find('div', class_='post-authors__name')
             author_name = item.text.strip() if item else None
@@ -63,7 +69,7 @@ class ParseApp:
 
             return chunks
 
-        while len(self.articles_covers) < self.titles_num:
+        while articles_added < self.titles_num:
             article_url = f'{self.host}/posts/{self.curr_post_id}'
             article_html = self.get_html(article_url)
             article_soup = BeautifulSoup(article_html.text, 'html.parser')
@@ -81,24 +87,43 @@ class ParseApp:
 
             content = get_content(article_soup, self.chunk_size)
 
-            self.articles_covers.append((author, title))
-            self.articles_content[article_url] = content
+            article_cover = Article(title=title, author=author)
+            self.session.add(article_cover)
+            self.session.commit()
+
+            for i, paragraph in enumerate(content):
+                self.session.add(Paragraph(article_id=article_cover.id, num=i + 1, text=paragraph))
+
+            self.session.commit()
+            articles_added += 1
+
+    def clear_db(self):
+        self.session.query(Paragraph).delete()
+        self.session.query(Article).delete()
+
+        self.session.commit()
+
+    def load_articles_covers(self):
+        return self.session.query(Article.author, Article.title).all()
 
     def get_articles_content(self, article_id):
-        self.curr_url = list(self.articles_content)[article_id - 1]
-        self.articles_content[self.curr_url] = list(filter(None, self.articles_content[self.curr_url]))
+        self.curr_article = self.session.query(Article).get(article_id)
+        self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
 
-        return self.articles_content[self.curr_url]
+        return self.article_text_chunks
 
     def delete_paragraph(self, paragraph_id):
-        curr_article = self.articles_content[self.curr_url]
+        index = paragraph_id - 1
+        self.article_text_chunks[index] = None
+        shift = self.article_text_chunks[:index].count(None)
 
-        curr_article[paragraph_id - 1] = None
+        self.session.delete(self.curr_article.paragraphs[index - shift])
+        self.session.commit()
 
-        if not any(curr_article):
-            del self.articles_content[self.curr_url], self.articles_covers[paragraph_id - 1]
+        if not any(self.article_text_chunks):
+            self.session.delete(self.curr_article)
 
-            self.get_content()
+            self.get_content(self.titles_num - 1)
 
             return True
 
