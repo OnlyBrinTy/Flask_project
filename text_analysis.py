@@ -1,6 +1,5 @@
+from bs4 import BeautifulSoup
 import requests
-import pymorphy3
-import string
 
 URL = 'https://api.diffchecker.com/public/text?output_type=html&email=onlybrinty@mail.ru'
 HEADERS = {
@@ -8,27 +7,16 @@ HEADERS = {
 }
 
 
-def delete_extra_parts(text):
-    morph = pymorphy3.MorphAnalyzer()
-    tokens = text.translate(str.maketrans('', '', string.punctuation)).lower().split()
-    clear_tokens = tuple(
-        filter(lambda x: morph.parse(x)[0].tag.POS not in ('CONJ', 'PRCL', 'INTJ', 'PREP'), tokens))
+def format_html(html):
+    soup = BeautifulSoup(html, 'html.parser')
 
-    return clear_tokens
+    diff_line_num1, diff_line_num2 = soup.find_all('td', class_='diff-line-number')
+    diff_line_num1.replaceWith()
+    diff_line_num2.attrs['data-content'] = ''
 
+    soup.find('style').replaceWith()
 
-def get_bgramms(tokens):
-    return tuple((tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1))
-
-
-def get_correct_text(aud_txt, rel_txt):
-    aud_tok, real_tok = delete_extra_parts(aud_txt), delete_extra_parts(rel_txt)
-    aud_bgram, real_bgram = get_bgramms(aud_tok), get_bgramms(real_tok)
-
-    comparison = [g in real_bgram for g in aud_bgram]
-    similarity = comparison.count(True) / len(comparison)
-
-    return similarity
+    return str(soup).replace('line-height: 1rem;\n  ', '')
 
 
 def post_request(text1, text2):
@@ -38,4 +26,6 @@ def post_request(text1, text2):
 
     response = requests.post(URL, json=data, headers=HEADERS)
 
-    return response.text
+    formatted_html = format_html(response.text)
+
+    return formatted_html

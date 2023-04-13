@@ -2,11 +2,9 @@ from itertools import islice
 from bs4 import BeautifulSoup, Tag
 import requests
 import time
-
-HEADERS = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36 OPR/73.0.3856.415'
-}
+from data import db_session
+from data.articles import Article
+from data.paragraph import Paragraph
 
 
 def batched(iterable, n):
@@ -20,12 +18,15 @@ def batched(iterable, n):
 class ParseApp:
     update_interval = 86400
 
-    def __init__(self, host: str, num_articles_to_parse: int):
-        self.num_articles_to_parse = num_articles_to_parse
+    def __init__(self, host: str, titles_num: int):
         self.host = host
+        self.titles_num = titles_num
 
         self.timer = 0
-        self.chunk_size = 45
+        self.chunk_size = 30
+
+        db_session.global_init('db/database.db')
+        self.session = db_session.create_session()
 
         self.update_articles()
 
@@ -33,19 +34,16 @@ class ParseApp:
         lapse = time.time() - self.timer
 
         if lapse >= self.update_interval:
-            self.get_content(50, self.num_articles_to_parse)
+            main_page_html = self.get_html(self.host)
+            main_page_soup = BeautifulSoup(main_page_html.text, 'html.parser')
+            self.curr_post_id = self.get_last_article(main_page_soup)
+
+            self.clear_db()
+
+            self.get_content()
             self.timer = time.time()
 
-        return self.articles_covers
-
-    def get_content(self, attempts_num, titles_num):
-        start = time.time()
-        def get_last_article(soup):
-            items = soup.find('a', class_='card__link').get('href')
-            last_post = int(items.replace('/posts/', ''))
-
-            return last_post
-
+    def get_content(self, articles_added=0):
         def get_author(soup):
             item = soup.find('div', class_='post-authors__name')
             author_name = item.text.strip() if item else None
@@ -71,19 +69,12 @@ class ParseApp:
 
             return chunks
 
-        main_page_html = self.get_html(self.host)
-        main_page_soup = BeautifulSoup(main_page_html.text, 'html.parser')
-        last_post_id = get_last_article(main_page_soup)
-
-        self.articles_covers = []
-        self.articles_content = {}
-
-        while attempts_num and len(self.articles_covers) < titles_num:
-            attempts_num -= 1
-
-            article_url = f'{self.host}/posts/{last_post_id - attempts_num}'
+        while articles_added < self.titles_num:
+            article_url = f'{self.host}/posts/{self.curr_post_id}'
             article_html = self.get_html(article_url)
             article_soup = BeautifulSoup(article_html.text, 'html.parser')
+
+            self.curr_post_id -= 1
 
             author = get_author(article_soup)
             title = get_title(article_soup)
@@ -96,15 +87,53 @@ class ParseApp:
 
             content = get_content(article_soup, self.chunk_size)
 
-            self.articles_covers.append((author, title))
-            self.articles_content[article_url] = content
-        print(time.time() - start)
+            article_cover = Article(title=title, author=author)
+            self.session.add(article_cover)
+            self.session.commit()
 
-    def get_articles_content(self, button_id):
-        article_url = list(self.articles_content)[button_id - 1]
+            for i, paragraph in enumerate(content):
+                self.session.add(Paragraph(article_id=article_cover.id, num=i + 1, text=paragraph))
 
-        return self.articles_content[article_url]
+            self.session.commit()
+            articles_added += 1
+
+    def clear_db(self):
+        self.session.query(Paragraph).delete()
+        self.session.query(Article).delete()
+
+        self.session.commit()
+
+    def load_articles_covers(self):
+        return self.session.query(Article.author, Article.title).all()
+
+    def get_articles_content(self, article_id):
+        self.curr_article = self.session.query(Article).get(article_id)
+        self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
+
+        return self.article_text_chunks
+
+    def delete_paragraph(self, paragraph_id):
+        index = paragraph_id - 1
+        self.article_text_chunks[index] = None
+        shift = self.article_text_chunks[:index].count(None)
+
+        self.session.delete(self.curr_article.paragraphs[index - shift])
+        self.session.commit()
+
+        if not any(self.article_text_chunks):
+            self.session.delete(self.curr_article)
+
+            self.get_content(self.titles_num - 1)
+
+            return True
+
+    @staticmethod
+    def get_last_article(soup):
+        items = soup.find('a', class_='card__link').get('href')
+        last_post = int(items.replace('/posts/', ''))
+
+        return last_post
 
     @staticmethod
     def get_html(url):
-        return requests.get(url, headers=HEADERS)
+        return requests.get(url)
