@@ -3,19 +3,19 @@ var listening_animation;
 var is_recognizing;
 var paragraph_text;
 var paragraph_id;
+var is_reciting;
 var mic_button;
 var textarea;
 var curr_div;
 var button;
 
-function send_delete_signal() {
+function send_delete_signal(local_p_id) {
     $.ajax({
         type: 'POST',
         url: '/DATA_delete_paragraph',
-        data: JSON.stringify({'id': paragraph_id}),
+        data: JSON.stringify({'id': local_p_id}),
         contentType: 'application/json;charset=UTF-8',
-        cache: false,
-        success: function(response) {close_block(response['article_is_empty'])}
+        success: function() {close_block(local_p_id)}
     });
 }
 
@@ -25,11 +25,9 @@ function send_text_to_server() {
         url: '/DATA_text_from_speech',
         data: JSON.stringify({"transcript": textarea.value, "text": paragraph_text}),
         contentType: 'application/json;charset=UTF-8',
-        cache: false,
         success: function(response) {end_reciting(response)}
     });
 }
-
 
 function replace_first_child(new_elem) {
     curr_div.firstElementChild.remove();
@@ -37,10 +35,15 @@ function replace_first_child(new_elem) {
 }
 
 function start_reciting(id) {
-    if (is_recognizing) {
-        stop_listening()
+    if (is_reciting) {
+        if (is_recognizing) {
+            stop_listening()
+        }
+
+        return_to_initial_state()
     }
 
+    is_reciting = true
     paragraph_id = id;
 
     button = document.getElementById(`button_${id}`);
@@ -60,10 +63,26 @@ function start_reciting(id) {
     replace_first_child(textarea)
 }
 
+function return_to_initial_state() {
+    mic_button.style.display = 'none';
+
+    button.className = 'start_button';
+    button.innerHTML = 'Начать';
+    button.setAttribute('onclick', `start_reciting(${paragraph_id})`);
+
+    deleted_paragraph = document.createElement('a')
+    deleted_paragraph.id = paragraph_id
+    deleted_paragraph.innerHTML = paragraph_text
+
+    replace_first_child(deleted_paragraph)
+}
+
 function end_reciting(difference_html) {
     if (is_recognizing) {
         stop_listening()
     }
+
+    is_reciting = false
 
     let diff_table = document.createElement('div');
     diff_table.innerHTML = difference_html;
@@ -72,13 +91,16 @@ function end_reciting(difference_html) {
 
     button.className = 'start_button';
     button.innerHTML = 'Закрыть';
-    button.setAttribute('onclick', `send_delete_signal()`);
+    button.setAttribute('onclick', `send_delete_signal(${paragraph_id})`);
 
     mic_button.style.display = 'none';
 }
 
-function close_block(article_is_empty) {
-    if (article_is_empty) {
+function close_block(local_p_id) {
+    curr_div = document.getElementById(`paragraph_${local_p_id}`);
+    let last_paragraph = document.getElementById('tasks_panel').childElementCount == 1;
+
+    if (last_paragraph) {
         let ending_label = document.createElement('h1')
         ending_label.innerHTML = 'Отлично! Вы всё выполнили.';
 
@@ -88,12 +110,14 @@ function close_block(article_is_empty) {
     }
     else {
         curr_div.remove()
-        let next_block = document.getElementById(`paragraph_${paragraph_id + 1}`)
+        let next_block = document.getElementById(`paragraph_${local_p_id + 1}`)
 
         if (next_block) {
             next_block.className = ''
         }
     }
+
+    curr_div = document.getElementById(`paragraph_${paragraph_id}`);
 }
 
 function return_to_home_page() {

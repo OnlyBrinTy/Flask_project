@@ -49,9 +49,9 @@ def delete_paragraph_from_article():
     req = request.json
     paragraph_id = req['id']
 
-    response = parse_app.delete_paragraph(paragraph_id)
+    parse_app.delete_paragraph(paragraph_id)
 
-    return {'article_is_empty': response}
+    return {}
 
 
 @app.route('/register', methods=['GET', 'POST'])

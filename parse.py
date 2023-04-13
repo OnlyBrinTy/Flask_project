@@ -108,6 +108,7 @@ class ParseApp:
 
     def get_articles_content(self, article_id):
         self.curr_article = self.session.query(Article).get(article_id)
+
         self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
 
         return self.article_text_chunks
@@ -119,13 +120,6 @@ class ParseApp:
 
         self.session.delete(self.curr_article.paragraphs[index - shift])
         self.session.commit()
-
-        if not any(self.article_text_chunks):
-            self.session.delete(self.curr_article)
-
-            self.get_content(self.titles_num - 1)
-
-            return True
 
     @staticmethod
     def get_last_article(soup):
