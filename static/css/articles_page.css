@@ -29,7 +29,6 @@ textarea {
 }
 
 .start_button, .send_button, .mic_button, .mic_listening {
-	float: left;
 	margin-top: 15%;
 	text-align: center;
 	height: 90%;
@@ -53,11 +52,12 @@ textarea {
 }
 
 .send_button {
+	float: left;
+	margin-right:5%;
 	margin-left:10%;
 }
 
 .mic_button, .mic_listening {
-	margin-left:5%;
 	width: 20%;
 	display: none;
 }
