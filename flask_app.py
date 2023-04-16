@@ -11,6 +11,12 @@ app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+db_name = "db/database.db"
+db_session.global_init(db_name)
+db_sess = db_session.create_session()
+
+parse_app = ParseApp('https://republic.ru', 10, db_sess)
+
 
 @app.route('/target')
 def article_page_load():
@@ -108,10 +114,4 @@ def register():
 
 
 if __name__ == '__main__':
-    db_name = "db/database.db"
-    db_session.global_init(db_name)
-    db_sess = db_session.create_session()
-
-    parse_app = ParseApp('https://republic.ru', 10, db_sess)
-
     app.run()
