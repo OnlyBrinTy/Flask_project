@@ -25,7 +25,7 @@ class ParseApp:
         self.timer = 0
         self.chunk_size = 30
 
-        db_session.global_init('/home/RomaMisha/Flask_project/db/database.db')
+        db_session.global_init('db/database.db')
         self.session = db_session.create_session()
 
         self.update_articles()
