@@ -28,18 +28,3 @@
     font-weight: bold;
 	user-select:none
 }
-
-.reg_button {
-	float: right;
-	background-color: #008cbadb;
-	text-align: center;
-	width: 30vw;
-	border-radius: 2vw;
-	margin-right: 8vw;
-	font-size: 5.7vw;
-	padding: 1% 2%;
-	border: 0;
-	text-decoration: none;
-	color: white;
-	user-select:none;
-}
