@@ -1,7 +1,6 @@
 from flask import *
 from text_analysis import *
 from parse import *
-from data import *
 from data.users import *
 from form import *
 
@@ -65,12 +64,14 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
+
         return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form)
@@ -113,4 +114,5 @@ def register():
 if __name__ == '__main__':
     db_name = "db/members.db"
     db_session.global_init(db_name)
+
     app.run()
