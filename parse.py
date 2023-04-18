@@ -117,8 +117,10 @@ class ParseApp:
         index = paragraph_id - 1
         self.article_text_chunks[index] = None
         shift = self.article_text_chunks[:index].count(None)
+        par = self.session.query(Paragraph).filter(Paragraph.id == paragraph_id + 1).first()
+        par.is_read = 1
 
-        self.session.delete(self.curr_article.paragraphs[index - shift])
+        # self.session.delete(self.curr_article.paragraphs[index - shift])
         self.session.commit()
 
     @staticmethod
