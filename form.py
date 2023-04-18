@@ -16,3 +16,21 @@ class LoginForm(FlaskForm):
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Войти')
+
+
+class EditPhoto(FlaskForm):
+    change_avatar = FileField('Выберите фото', validators=[DataRequired()])
+
+    submit_avatar = SubmitField('Изменить')
+
+
+class EditPassword(FlaskForm):
+    password = PasswordField('Изменить пароль', validators=[DataRequired()])
+
+    submit_password = SubmitField('Изменить')
+
+
+class EditEmail(FlaskForm):
+    email = EmailField('Изменить почту', validators=[DataRequired()])
+
+    submit_email = SubmitField('Изменить')

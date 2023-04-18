@@ -15,7 +15,10 @@ class User(SqlAlchemyBase, UserMixin):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
+    avatar_path = sqlalchemy.Column(sqlalchemy.String, default='no image.png')
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+
+    # masks = orm.relationship("Mask")
 
     def __repr__(self):
         return f'<Colonist> {self.id} {self.surname} {self.name}'

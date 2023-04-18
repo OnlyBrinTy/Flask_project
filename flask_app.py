@@ -1,3 +1,5 @@
+from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
 from flask import *
 from data import db_session
 from text_analysis import *
@@ -70,6 +72,7 @@ def load_user(user_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
@@ -79,6 +82,7 @@ def login():
         return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form)
+
     return render_template('login.html', title='Авторизация', form=form)
 
 
@@ -86,12 +90,14 @@ def login():
 @login_required
 def logout():
     logout_user()
+
     return redirect("/")
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
@@ -110,7 +116,37 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         return redirect('/login')
+
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def go_to_profile():
+    forms = (EditPhoto(), EditPassword(), EditEmail())
+
+    if any(map(FlaskForm.validate_on_submit, forms)):
+        if forms[0].validate_on_submit():
+            filename = secure_filename(forms[0].change_avatar.data.filename)
+            forms[0].change_avatar.data.save('static/samples/' + filename)
+
+            current_user.avatar_path = filename
+        elif forms[1].validate_on_submit():
+            current_user.set_password(forms[1].password.data)
+        else:
+            current_user.email = forms[2].email.data
+
+        db_sess.merge(current_user)
+        db_sess.commit()
+
+    params = {
+        'username': current_user.name,
+        'user_avatar': current_user.avatar_path,
+        'forms': forms,
+        'title': 'Профиль'
+    }
+
+    return render_template('profile.html', **params)
 
 
 if __name__ == '__main__':
