@@ -17,6 +17,8 @@ class User(SqlAlchemyBase, UserMixin):
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
+    masks = orm.relationship("Mask")
+
     def __repr__(self):
         return f'<Colonist> {self.id} {self.surname} {self.name}'
 
