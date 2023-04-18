@@ -9,14 +9,21 @@
     <link rel="stylesheet" type="text/css" href="static/css/base.css">
     <link rel="stylesheet" type="text/css" href="static/css/{{ css_file_name }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="static/js/base.js"></script>
     <script src="static/js/{{ js_file_name }}"></script>
     <title>MemorizeMe</title>
 </head>
 <header>
-    <div class='space'></div>
-    <div id='header_title'>
-        MemorizeMe
+    <div class="heading">
+        <a id="header_title">MemorizeMe</a>
+        {% if is_registered %}
+            <button onclick="go_to_href('profile')">Profile</button>
+        {% else %}
+            <button class="reg_button" onclick="go_to_href('login')">Log in</button>
+            <button class="reg_button" onclick="go_to_href('register')">Sing up</button>
+        {% endif %}
     </div>
+    <div class="space"></div>
 </header>
 <body>
     {% block content %} {% endblock %}
