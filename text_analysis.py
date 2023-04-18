@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import re
 
 URL = 'https://api.diffchecker.com/public/text?output_type=html&email=onlybrinty@mail.ru'
 HEADERS = {
@@ -20,8 +21,10 @@ def format_html(html):
 
 
 def post_request(text1, text2):
+    removed_signs = re.sub(r'[^\w\s]', '', text2)
+
     data = {"left": text1,
-            "right": text2,
+            "right": removed_signs,
             "diff_level": "word"}
 
     response = requests.post(URL, json=data, headers=HEADERS)

@@ -1,3 +1,5 @@
+from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
 from flask import *
 from data import db_session
 from text_analysis import *
@@ -5,7 +7,7 @@ from parse import *
 from data.users import *
 from form import *
 
-app = Flask(__name__)
+app = Flask('foo')
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -15,7 +17,7 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+# parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/target')
@@ -88,6 +90,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+
     return redirect("/")
 
 
@@ -117,14 +120,33 @@ def register():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
 def go_to_profile():
-    form = Profile()
+    forms = (EditPhoto(), EditPassword(), EditEmail())
 
-    if form.validate_on_submit():
-        pass
+    if any(map(FlaskForm.validate_on_submit, forms)):
+        if forms[0].validate_on_submit():
+            filename = secure_filename(forms[0].change_avatar.data.filename)
+            forms[0].change_avatar.data.save('static/samples/' + filename)
 
-    return render_template('profile.html', title='Профиль', form=form)
+            current_user.avatar_path = filename
+        elif forms[1].validate_on_submit():
+            current_user.set_password(forms[1].password.data)
+        else:
+            current_user.email = forms[2].email.data
+
+        db_sess.merge(current_user)
+        db_sess.commit()
+
+    params = {
+        'username': current_user.name,
+        'user_avatar': current_user.avatar_path,
+        'forms': forms,
+        'title': 'Профиль'
+    }
+
+    return render_template('profile.html', **params)
 
 
 if __name__ == '__main__':

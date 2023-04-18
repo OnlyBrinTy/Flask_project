@@ -1,34 +1,46 @@
 {% extends "form_base.html" %}
 
 {% block content %}
-    <h1>onlybrinty@gmail.com</h1>
+    <h1>{{ username }}</h1>
     <br>
-    <h2>Статистика 1</h2>
-    <h2>Статистика 2</h2>
+    <img src="static/samples/{{ user_avatar }}" alt="Фото профиля" class="img-thumbnail" width="60%">
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ forms[0].csrf_token }}
+        {{ forms[0].hidden_tag() }}
+
+        {{ forms[0].change_avatar }}
+        <br><br>
+        {{ forms[0].submit_avatar(class="btn btn-primary", type="submit") }}
+        <br><br>
+    </form>
+    <br><br>
+    <form action="" method="post">
+        {{ forms[2].csrf_token }}
+        {{ forms[2].hidden_tag() }}
+        <p>
+            {{ forms[2].email.label }}<br>
+            {{ forms[2].email(class="forms-control", type="email") }}
+            {% for error in forms[2].email.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>{{ forms[2].submit_email(type="submit", class="btn btn-primary") }}</p>
+    </form>
     <br>
     <form action="" method="post">
-        {{ form.hidden_tag() }}
+        {{ forms[1].csrf_token }}
+        {{ forms[1].hidden_tag() }}
         <p>
-            {{ form.email.label }}<br>
-            {{ form.email(class="form-control", type="email") }}<br>
-            {% for error in form.email.errors %}
+            {{ forms[1].password.label }}<br>
+            {{ forms[1].password(class="forms-control", type="password") }}
+            {% for error in forms[1].password.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>
             {% endfor %}
         </p>
-        <p>{{ form.submit_email(type="submit", class="btn btn-primary") }}</p>
-        <br>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(class="form-control", type="password") }}<br>
-            {% for error in form.password.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit_password(type="submit", class="btn btn-primary") }}</p>
-        <div>{{ message }}</div>
+        <p>{{ forms[1].submit_password(type="submit", class="btn btn-primary") }}</p>
     </form>
 {% endblock %}

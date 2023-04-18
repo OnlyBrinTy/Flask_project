@@ -18,11 +18,19 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Войти')
 
 
-class Profile(FlaskForm):
-    email = EmailField('Сменить почту', validators=[DataRequired()])
-    submit_email = SubmitField('Изменить')
+class EditPhoto(FlaskForm):
+    change_avatar = FileField('Выберите фото', validators=[DataRequired()])
 
-    password = PasswordField('Сменить пароль', validators=[DataRequired()])
+    submit_avatar = SubmitField('Изменить')
+
+
+class EditPassword(FlaskForm):
+    password = PasswordField('Изменить пароль', validators=[DataRequired()])
+
     submit_password = SubmitField('Изменить')
 
-    logout = SubmitField('Выйти')
+
+class EditEmail(FlaskForm):
+    email = EmailField('Изменить почту', validators=[DataRequired()])
+
+    submit_email = SubmitField('Изменить')
