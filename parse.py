@@ -4,6 +4,8 @@ import requests
 import time
 from data.articles import Article
 from data.paragraph import Paragraph
+from data.mask import Mask
+from data.users import User
 
 
 def batched(iterable, n):
@@ -88,6 +90,7 @@ class ParseApp:
             self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
+            # self.session.add(Mask(article_id=article_cover.id))
             self.session.add(article_cover)
             self.session.commit()
 
@@ -108,7 +111,6 @@ class ParseApp:
 
     def get_articles_content(self, article_id):
         self.curr_article = self.session.query(Article).get(article_id)
-
         self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
 
         return self.article_text_chunks

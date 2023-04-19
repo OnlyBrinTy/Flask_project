@@ -14,6 +14,7 @@ class User(SqlAlchemyBase, UserMixin):
                            primary_key=True, autoincrement=True)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    masks = orm.relationship("Mask")
 
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     avatar_path = sqlalchemy.Column(sqlalchemy.String, default='no image.png')

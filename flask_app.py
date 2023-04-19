@@ -6,6 +6,7 @@ from data import db_session
 from text_analysis import *
 from parse import *
 from data.users import *
+from data.mask import Mask
 from form import *
 
 app = Flask(__name__)
@@ -118,6 +119,8 @@ def register():
         )
         user.set_password(form.password.data)
         db_sess.add(user)
+        db_sess.commit()
+        db_sess.add(Mask(user_id=user.id, read_par='0' * 10))
         db_sess.commit()
         return redirect('/login')
 
