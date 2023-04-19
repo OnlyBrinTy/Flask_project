@@ -8,7 +8,7 @@ from parse import *
 from data.users import *
 from form import *
 
-app = Flask('foo')
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -128,21 +128,6 @@ def register():
 @login_required
 def go_to_profile():
     forms = (EditPhoto(), EditPassword(), EditEmail(), LogOut())
-
-    if any(map(FlaskForm.validate_on_submit, forms)):
-        if forms[0].validate_on_submit():
-            filename = secure_filename(forms[0].change_avatar.data.filename)
-            forms[0].change_avatar.data.save('static/samples/' + filename)
-
-            current_user.avatar_path = filename
-        elif forms[1].validate_on_submit():
-            current_user.set_password(forms[1].password.data)
-        else:
-            current_user.email = forms[2].email.data
-
-        db_sess.merge(current_user)
-        db_sess.commit()
-
     params = {
         'username': current_user.name,
         'user_avatar': current_user.avatar_path,
@@ -151,6 +136,27 @@ def go_to_profile():
         'forms': forms,
         'title': 'Профиль'
     }
+
+    if any(map(FlaskForm.validate_on_submit, forms)):
+        if forms[0].validate_on_submit():
+            filename = secure_filename(forms[0].change_avatar.data.filename)
+            forms[0].change_avatar.data.save('static/samples/' + filename)
+
+            current_user.avatar_path = filename
+        elif forms[1].validate_on_submit():
+            if forms[1].new_password.data != forms[1].new_password_again.data:
+                return render_template('profile.html', **params, message2="Пароли не совпадают")
+
+            current_user.set_password(forms[1].new_password.data)
+        else:
+            user_with_this_email = db_sess.query(User).filter(User.email == forms[2].email.data).first()
+            if user_with_this_email:
+                return render_template('profile.html', **params, message1="Такая почта уже есть")
+
+            current_user.email = forms[2].email.data
+
+        db_sess.merge(current_user)
+        db_sess.commit()
 
     return render_template('profile.html', **params)
 

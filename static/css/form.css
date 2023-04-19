@@ -13,6 +13,10 @@ body {
 	border-radius: 8%;
 }
 
+.label {
+	font-size: 6vw;
+}
+
 .img-thumbnail {
 	border-radius: 10%;
 }
@@ -22,7 +26,6 @@ body {
 	float: right;
 }
 
-#change_avatar {
-	color: transparent;
-	width: 100%;
+input[type='file'] {
+  color: transparent;
 }

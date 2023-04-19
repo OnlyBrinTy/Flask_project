@@ -25,7 +25,8 @@ class EditPhoto(FlaskForm):
 
 
 class EditPassword(FlaskForm):
-    password = PasswordField('Изменить пароль', validators=[DataRequired()])
+    new_password = PasswordField('Введите новый пароль', validators=[DataRequired()])
+    new_password_again = PasswordField('Введите новый пароль ещё раз', validators=[DataRequired()])
 
     submit_password = SubmitField('Изменить')
 

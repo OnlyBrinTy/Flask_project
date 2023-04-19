@@ -13,8 +13,8 @@
             {{ forms[0].submit_avatar(class="btn btn-secondary", type="submit") }}
         </form>
         <br><br>
-        <h4>Дата создания: {{ registration_date }}</h4>
-        <h4>Выполнено заданий: {{ completed_tasks }}</h4>
+        <h4 class="label">Дата создания: {{ registration_date }}</h4>
+        <h4 class="label">Выполнено заданий: {{ completed_tasks }}</h4>
     </div>
     <br><br>
     <form action="" method="post">
@@ -24,15 +24,21 @@
             {{ forms[2].email(class="form-control", type="email") }}
         </p>
         <p>{{ forms[2].submit_email(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message1 }}</div>
     </form>
     <br>
     <form action="" method="post">
         {{ forms[1].hidden_tag() }}
         <p>
-            {{ forms[1].password.label }}<br>
-            {{ forms[1].password(class="form-control", type="password") }}
+            {{ forms[1].new_password.label }}<br>
+            {{ forms[1].new_password(class="form-control", type="password") }}
+        </p>
+        <p>
+            {{ forms[1].new_password_again.label }}<br>
+            {{ forms[1].new_password_again(class="form-control", type="password") }}
         </p>
         <p>{{ forms[1].submit_password(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message2 }}</div>
     </form>
     <br><br>
     <form action="/logout" method="post">
