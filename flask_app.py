@@ -18,7 +18,7 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-# parse_app = ParseApp('https://republic.ru', 10, db_sess)
+parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/target')
@@ -47,7 +47,7 @@ def home_page_load():
 
 @app.route('/DATA_text_from_speech', methods=['POST'])
 def final_result_load():
-    if current_user:
+    if current_user.is_authenticated:
         current_user.completed_tasks += 1
 
     req = request.json
