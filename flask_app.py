@@ -1,5 +1,6 @@
 from werkzeug.utils import secure_filename
 from flask_wtf import FlaskForm
+from datetime import date
 from flask import *
 from data import db_session
 from text_analysis import *
@@ -27,6 +28,7 @@ def article_page_load():
 
     params = {'css_file_name': 'articles_page.css',
               'js_file_name': 'articles_page.js',
+              'is_registered': current_user.is_authenticated,
               'paragraphs': article}
 
     return render_template('articles_page.html', **params)
@@ -37,7 +39,7 @@ def home_page_load():
     articles_covers = parse_app.load_articles_covers()
     params = {'css_file_name': 'main_page.css',
               'js_file_name': 'main_page.js',
-              'is_registered': False,
+              'is_registered': current_user.is_authenticated,
               'articles_covers': articles_covers}
 
     return render_template('main_page.html', **params)
@@ -45,6 +47,9 @@ def home_page_load():
 
 @app.route('/DATA_text_from_speech', methods=['POST'])
 def final_result_load():
+    if current_user.is_authenticated:
+        current_user.completed_tasks += 1
+
     req = request.json
     transcript = req['transcript']
     actual_text = req['text']
@@ -86,7 +91,7 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()
@@ -110,7 +115,6 @@ def register():
         user = User(
             name=form.name.data,
             email=form.email.data,
-            # about=form.about.data
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -123,7 +127,15 @@ def register():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def go_to_profile():
-    forms = (EditPhoto(), EditPassword(), EditEmail())
+    forms = (EditPhoto(), EditPassword(), EditEmail(), LogOut())
+    params = {
+        'username': current_user.name,
+        'user_avatar': current_user.avatar_path,
+        'registration_date': current_user.registration_date,
+        'completed_tasks': current_user.completed_tasks,
+        'forms': forms,
+        'title': 'Профиль'
+    }
 
     if any(map(FlaskForm.validate_on_submit, forms)):
         if forms[0].validate_on_submit():
@@ -132,19 +144,19 @@ def go_to_profile():
 
             current_user.avatar_path = filename
         elif forms[1].validate_on_submit():
-            current_user.set_password(forms[1].password.data)
+            if forms[1].new_password.data != forms[1].new_password_again.data:
+                return render_template('profile.html', **params, message2="Пароли не совпадают")
+
+            current_user.set_password(forms[1].new_password.data)
         else:
+            user_with_this_email = db_sess.query(User).filter(User.email == forms[2].email.data).first()
+            if user_with_this_email:
+                return render_template('profile.html', **params, message1="Такая почта уже есть")
+
             current_user.email = forms[2].email.data
 
         db_sess.merge(current_user)
         db_sess.commit()
-
-    params = {
-        'username': current_user.name,
-        'user_avatar': current_user.avatar_path,
-        'forms': forms,
-        'title': 'Профиль'
-    }
 
     return render_template('profile.html', **params)
 

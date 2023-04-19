@@ -12,16 +12,13 @@ class User(SqlAlchemyBase, UserMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    email = sqlalchemy.Column(sqlalchemy.String,
-                              index=True, unique=True, nullable=True)
-    avatar_path = sqlalchemy.Column(sqlalchemy.String, default='no image.png')
+    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
 
-    # masks = orm.relationship("Mask")
-
-    def __repr__(self):
-        return f'<Colonist> {self.id} {self.surname} {self.name}'
+    name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    avatar_path = sqlalchemy.Column(sqlalchemy.String, default='no image.png')
+    registration_date = sqlalchemy.Column(sqlalchemy.Date, default=datetime.date.today)
+    completed_tasks = sqlalchemy.Column(sqlalchemy.Integer, default=0)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
