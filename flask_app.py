@@ -8,7 +8,7 @@ from parse import *
 from data.users import *
 from form import *
 
-app = Flask(__name__)
+app = Flask('foo')
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -18,7 +18,7 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+# parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/target')
@@ -28,6 +28,7 @@ def article_page_load():
 
     params = {'css_file_name': 'articles_page.css',
               'js_file_name': 'articles_page.js',
+              'is_registered': current_user.is_authenticated,
               'paragraphs': article}
 
     return render_template('articles_page.html', **params)
@@ -38,7 +39,7 @@ def home_page_load():
     articles_covers = parse_app.load_articles_covers()
     params = {'css_file_name': 'main_page.css',
               'js_file_name': 'main_page.js',
-              'is_registered': False,
+              'is_registered': current_user.is_authenticated,
               'articles_covers': articles_covers}
 
     return render_template('main_page.html', **params)
@@ -90,7 +91,7 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()

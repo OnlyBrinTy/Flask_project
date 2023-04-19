@@ -32,7 +32,7 @@ header {
     z-index: 4px;;
 }
 
-.reg_button {
+.reg_button, .profile_button {
 	background-color: #008cbadb;
 	text-align: center;
 	border-radius: 2vw;
@@ -43,4 +43,8 @@ header {
 	text-decoration: none;
 	color: white;
 	user-select:none;
+}
+
+.profile_button {
+	width: 45%
 }

@@ -22,6 +22,7 @@ body {
 	float: right;
 }
 
-input[type='file'] {
-  color: transparent;
+#change_avatar {
+	color: transparent;
+	width: 100%;
 }
