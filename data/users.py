@@ -1,7 +1,7 @@
 import datetime
-import sqlalchemy
+from sqlalchemy import orm
 from flask_login import *
-from sqlalchemy import *
+import sqlalchemy
 from werkzeug.security import *
 
 from .db_session import SqlAlchemyBase
@@ -16,6 +16,8 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+
+    masks = orm.relationship("Mask")
 
     def __repr__(self):
         return f'<Colonist> {self.id} {self.surname} {self.name}'
