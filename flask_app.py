@@ -1,5 +1,6 @@
 from werkzeug.utils import secure_filename
 from flask_wtf import FlaskForm
+from datetime import date
 from flask import *
 from data import db_session
 from text_analysis import *
@@ -7,7 +8,7 @@ from parse import *
 from data.users import *
 from form import *
 
-app = Flask('foo')
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -17,7 +18,7 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-# parse_app = ParseApp('https://republic.ru', 10, db_sess)
+parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/target')
@@ -45,6 +46,9 @@ def home_page_load():
 
 @app.route('/DATA_text_from_speech', methods=['POST'])
 def final_result_load():
+    if current_user:
+        current_user.completed_tasks += 1
+
     req = request.json
     transcript = req['transcript']
     actual_text = req['text']
@@ -110,7 +114,6 @@ def register():
         user = User(
             name=form.name.data,
             email=form.email.data,
-            # about=form.about.data
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -123,7 +126,7 @@ def register():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def go_to_profile():
-    forms = (EditPhoto(), EditPassword(), EditEmail())
+    forms = (EditPhoto(), EditPassword(), EditEmail(), LogOut())
 
     if any(map(FlaskForm.validate_on_submit, forms)):
         if forms[0].validate_on_submit():
@@ -142,6 +145,8 @@ def go_to_profile():
     params = {
         'username': current_user.name,
         'user_avatar': current_user.avatar_path,
+        'registration_date': current_user.registration_date,
+        'completed_tasks': current_user.completed_tasks,
         'forms': forms,
         'title': 'Профиль'
     }

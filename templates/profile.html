@@ -1,46 +1,42 @@
 {% extends "form_base.html" %}
 
 {% block content %}
-    <h1>{{ username }}</h1>
-    <br>
-    <img src="static/samples/{{ user_avatar }}" alt="Фото профиля" class="img-thumbnail" width="60%">
-    <form action="" method="post" enctype="multipart/form-data">
-        {{ forms[0].csrf_token }}
-        {{ forms[0].hidden_tag() }}
+    <div class="profile_page">
+        <h1>{{ username }}</h1>
+        <br>
+        <img src="static/samples/{{ user_avatar }}" alt="Фото профиля" class="img-thumbnail" width="50%">
+        <form action="" method="post" enctype="multipart/form-data" id="avatar_form">
+            {{ forms[0].hidden_tag() }}
 
-        {{ forms[0].change_avatar }}
+            {{ forms[0].change_avatar }}
+            <br><br>
+            {{ forms[0].submit_avatar(class="btn btn-secondary", type="submit") }}
+        </form>
         <br><br>
-        {{ forms[0].submit_avatar(class="btn btn-primary", type="submit") }}
-        <br><br>
-    </form>
+        <h4>Дата создания: {{ registration_date }}</h4>
+        <h4>Выполнено заданий: {{ completed_tasks }}</h4>
+    </div>
     <br><br>
     <form action="" method="post">
-        {{ forms[2].csrf_token }}
         {{ forms[2].hidden_tag() }}
         <p>
             {{ forms[2].email.label }}<br>
-            {{ forms[2].email(class="forms-control", type="email") }}
-            {% for error in forms[2].email.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
+            {{ forms[2].email(class="form-control", type="email") }}
         </p>
         <p>{{ forms[2].submit_email(type="submit", class="btn btn-primary") }}</p>
     </form>
     <br>
     <form action="" method="post">
-        {{ forms[1].csrf_token }}
         {{ forms[1].hidden_tag() }}
         <p>
             {{ forms[1].password.label }}<br>
-            {{ forms[1].password(class="forms-control", type="password") }}
-            {% for error in forms[1].password.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
+            {{ forms[1].password(class="form-control", type="password") }}
         </p>
         <p>{{ forms[1].submit_password(type="submit", class="btn btn-primary") }}</p>
+    </form>
+    <br><br>
+    <form action="/logout" method="post">
+        {{ forms[1].hidden_tag() }}
+        <p>{{ forms[3].logout(type="submit", class="btn btn-danger") }}</p>
     </form>
 {% endblock %}

@@ -6,3 +6,22 @@ body {
 .form {
     padding: 7%;
 }
+
+.profile_page {
+	padding: 5%;
+	background-color: #f0f0f0;
+	border-radius: 8%;
+}
+
+.img-thumbnail {
+	border-radius: 10%;
+}
+
+#avatar_form {
+	width: 45%;
+	float: right;
+}
+
+input[type='file'] {
+  color: transparent;
+}
