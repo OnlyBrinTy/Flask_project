@@ -2,7 +2,6 @@ from itertools import islice
 from bs4 import BeautifulSoup, Tag
 import requests
 import time
-from data import db_session
 from data.articles import Article
 from data.paragraph import Paragraph
 
@@ -18,15 +17,13 @@ def batched(iterable, n):
 class ParseApp:
     update_interval = 86400
 
-    def __init__(self, host: str, titles_num: int):
+    def __init__(self, host: str, titles_num: int, session):
         self.host = host
         self.titles_num = titles_num
+        self.session = session
 
         self.timer = 0
         self.chunk_size = 30
-
-        db_session.global_init('/home/RomaMisha/Flask_project/db/database.db')
-        self.session = db_session.create_session()
 
         self.update_articles()
 
@@ -120,10 +117,8 @@ class ParseApp:
         index = paragraph_id - 1
         self.article_text_chunks[index] = None
         shift = self.article_text_chunks[:index].count(None)
-        par = self.session.query(Paragraph).filter(Paragraph.id == paragraph_id + 1).first()
-        par.is_read = 1
 
-        # self.session.delete(self.curr_article.paragraphs[index - shift])
+        self.session.delete(self.curr_article.paragraphs[index - shift])
         self.session.commit()
 
     @staticmethod
