@@ -1,0 +1,48 @@
+{% extends "form_base.html" %}
+
+{% block content %}
+    <div class="profile_page">
+        <h1>{{ username }}</h1>
+        <br>
+        <img src="static/samples/{{ user_avatar }}" alt="Фото профиля" class="img-thumbnail" width="50%">
+        <form action="" method="post" enctype="multipart/form-data" id="avatar_form">
+            {{ forms[0].hidden_tag() }}
+
+            {{ forms[0].change_avatar }}
+            <br><br>
+            {{ forms[0].submit_avatar(class="btn btn-secondary", type="submit") }}
+        </form>
+        <br><br>
+        <h4 class="label">Дата создания: {{ registration_date }}</h4>
+        <h4 class="label">Выполнено заданий: {{ completed_tasks }}</h4>
+    </div>
+    <br><br>
+    <form action="" method="post">
+        {{ forms[2].hidden_tag() }}
+        <p>
+            {{ forms[2].email.label }}<br>
+            {{ forms[2].email(class="form-control", type="email") }}
+        </p>
+        <p>{{ forms[2].submit_email(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message1 }}</div>
+    </form>
+    <br>
+    <form action="" method="post">
+        {{ forms[1].hidden_tag() }}
+        <p>
+            {{ forms[1].new_password.label }}<br>
+            {{ forms[1].new_password(class="form-control", type="password") }}
+        </p>
+        <p>
+            {{ forms[1].new_password_again.label }}<br>
+            {{ forms[1].new_password_again(class="form-control", type="password") }}
+        </p>
+        <p>{{ forms[1].submit_password(type="submit", class="btn btn-primary") }}</p>
+        <div>{{ message2 }}</div>
+    </form>
+    <br><br>
+    <form action="/logout" method="post">
+        {{ forms[1].hidden_tag() }}
+        <p>{{ forms[3].logout(type="submit", class="btn btn-danger") }}</p>
+    </form>
+{% endblock %}
