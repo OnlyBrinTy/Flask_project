@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Identity
+from sqlalchemy import *
 from .db_session import SqlAlchemyBase
 
 
@@ -9,7 +9,6 @@ class Paragraph(SqlAlchemyBase):
     article_id = Column(Integer(), ForeignKey("articles.id"), nullable=False)
     num = Column(Integer(), nullable=False)
     text = Column(String(), nullable=False, index=True)
-    is_read = Column(Integer(), nullable=True, default=0)
 
     def __str__(self):
         return self.text

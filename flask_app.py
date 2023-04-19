@@ -3,6 +3,7 @@ from data import db_session
 from text_analysis import *
 from parse import *
 from data.users import *
+from data.mask import Mask
 from form import *
 
 app = Flask(__name__)
@@ -15,7 +16,7 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+parse_app = ParseApp('https://republic.ru', 10)
 
 
 @app.route('/target')
@@ -109,8 +110,19 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        db_sess.add(Mask(user_id=user.id, read_par='0' * 10))
+        db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route("/session_test")
+def session_test():
+    visits_count = session.get('visits_count', 0)
+    session['visits_count'] = visits_count + 1
+    session.permanent = False
+    return make_response(
+        f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
 if __name__ == '__main__':

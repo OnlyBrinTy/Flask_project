@@ -5,6 +5,8 @@ import time
 from data import db_session
 from data.articles import Article
 from data.paragraph import Paragraph
+from data.mask import Mask
+from data.users import User
 
 
 def batched(iterable, n):
@@ -88,6 +90,7 @@ class ParseApp:
             content = get_content(article_soup, self.chunk_size)
 
             article_cover = Article(title=title, author=author)
+            # self.session.add(Mask(article_id=article_cover.id))
             self.session.add(article_cover)
             self.session.commit()
 
@@ -108,7 +111,6 @@ class ParseApp:
 
     def get_articles_content(self, article_id):
         self.curr_article = self.session.query(Article).get(article_id)
-
         self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
 
         return self.article_text_chunks
@@ -117,8 +119,6 @@ class ParseApp:
         index = paragraph_id - 1
         self.article_text_chunks[index] = None
         shift = self.article_text_chunks[:index].count(None)
-        par = self.session.query(Paragraph).filter(Paragraph.id == paragraph_id + 1).first()
-        par.is_read = 1
 
         # self.session.delete(self.curr_article.paragraphs[index - shift])
         self.session.commit()
