@@ -36,6 +36,7 @@ class ParseApp:
             self.curr_post_id = self.get_last_article(main_page_soup)
 
             self.clear_db()
+            self.masks_lengths = []
 
             self.get_content()
             self.timer = time.time()
@@ -83,6 +84,8 @@ class ParseApp:
                 author = 'Нет автора'
 
             content = get_content(article_soup, self.chunk_size)
+
+            self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
             self.session.add(article_cover)
