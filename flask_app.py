@@ -1,13 +1,14 @@
 from werkzeug.utils import secure_filename
 from flask_wtf import FlaskForm
-from datetime import date
-from flask import *
+from itertools import compress
+from flask import Flask, render_template, redirect, request
+from flask_login import LoginManager, login_required, current_user, logout_user
 from data import db_session
-from text_analysis import *
-from parse import *
-from data.users import *
+from text_analysis import post_request
+from parse import ParseApp
+from data.users import User
 from data.mask import Mask
-from form import *
+from form import RegisterForm, LoginForm, EditPhoto, EditPassword, EditEmail, LogOut
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
@@ -26,6 +27,11 @@ parse_app = ParseApp('https://republic.ru', 10, db_sess)
 def article_page_load():
     article_id = int(request.args.get('post'))
     article = parse_app.get_articles_content(article_id)
+
+    if current_user.is_authenticated:
+        mask = map(int, current_user.masks[article_id - 1].read_par)
+
+        article = list(compress(article, mask))
 
     params = {'css_file_name': 'articles_page.css',
               'js_file_name': 'articles_page.js',
@@ -65,7 +71,13 @@ def delete_paragraph_from_article():
     req = request.json
     paragraph_id = req['id']
 
-    parse_app.delete_paragraph(paragraph_id)
+    mask = current_user.masks[paragraph_id - 1]
+    list_mask = list(mask.read_par)
+    list_mask[parse_app.curr_article.id] = 0
+    mask.read_par = ''.join(list_mask)
+
+    db_sess.merge(mask)
+    db_sess.commit()
 
     return {}
 
@@ -120,8 +132,14 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
-        db_sess.add(Mask(user_id=user.id, read_par='0' * 10))
+
+        masks_lengths = [6, 8, 11, 15, 33, 16, 7, 1, 3, 11]
+
+        for mask_length in masks_lengths:
+            db_sess.add(Mask(user_id=user.id, read_par='1' * mask_length))
+
         db_sess.commit()
+
         return redirect('/login')
 
     return render_template('register.html', title='Регистрация', form=form)
