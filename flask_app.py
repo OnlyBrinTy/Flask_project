@@ -56,7 +56,10 @@ def final_result_load():
 def delete_paragraph_from_article():
     req = request.json
     paragraph_id = req['id']
-
+    if current_user.is_authenticated:
+        mask = db_sess.query(Mask).filter(Mask.user_id == current_user.id).first()
+        mask.read_par = mask.read_par[:paragraph_id - 1] + '1' + mask.read_par[paragraph_id:]
+        db_sess.commit()
     parse_app.delete_paragraph(paragraph_id)
 
     return {}
@@ -104,11 +107,11 @@ def register():
         user = User(
             name=form.name.data,
             email=form.email.data,
-            # about=form.about.data
         )
         user.set_password(form.password.data)
         db_sess.add(user)
-        db_sess.add(Mask(read_par='0' * 10))
+        id = db_sess.query(User).filter(User.email == form.email.data).first()
+        db_sess.add(Mask(user_id=user.id, read_par='0' * 10))
         db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)

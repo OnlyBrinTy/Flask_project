@@ -90,7 +90,7 @@ class ParseApp:
             self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
-            # self.session.add(Mask(article_id=article_cover.id))
+            user = self.session.query(User).filter()
             self.session.add(article_cover)
             self.session.commit()
 
@@ -120,8 +120,8 @@ class ParseApp:
         self.article_text_chunks[index] = None
         shift = self.article_text_chunks[:index].count(None)
 
-        self.session.delete(self.curr_article.paragraphs[index - shift])
-        self.session.commit()
+        # self.session.delete(self.curr_article.paragraphs[index - shift])
+        # self.session.commit()
 
     @staticmethod
     def get_last_article(soup):
