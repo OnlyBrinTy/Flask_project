@@ -3,6 +3,9 @@ from .db_session import SqlAlchemyBase
 
 
 class Paragraph(SqlAlchemyBase):
+    """Данный класс представляет их себя таблицу с параграфами, которые ссылаются на статьи
+    по article_id. Таким образом article получает доступ к списку параграфов статьи."""
+
     __tablename__ = 'paragraphs'
 
     id = Column(Integer(), autoincrement=True, primary_key=True)

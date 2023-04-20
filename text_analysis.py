@@ -9,6 +9,7 @@ HEADERS = {
 
 
 def format_html(html):
+    """Удаление лишних элементов после получения статьи"""
     soup = BeautifulSoup(html, 'html.parser')
 
     diff_line_num1, diff_line_num2 = soup.find_all('td', class_='diff-line-number')
@@ -21,6 +22,9 @@ def format_html(html):
 
 
 def post_request(text1, text2):
+    """Обращаемся к API DiffChecker для получения сравнения двух текстов в виде html"""
+
+    # приводим два текста в один формат
     removed_signs1 = re.sub(r'[^\w\s]', '', text1).lower()
     removed_signs2 = re.sub(r'[^\w\s]', '', text2).lower()
 
@@ -33,5 +37,3 @@ def post_request(text1, text2):
     formatted_html = format_html(response.text)
 
     return formatted_html
-
-post_request('Привет,', 'привет')

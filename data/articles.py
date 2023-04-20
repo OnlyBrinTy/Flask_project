@@ -5,7 +5,7 @@ from .db_session import SqlAlchemyBase
 class Article(SqlAlchemyBase):
     """Этот класс отвечает за статьи, взятые с republic.ru.
      Помимо двух основных параметров - title и author, здесь параметр paragraphs.
-     Он представляет собой список со ссылками на параграфы статьи """
+     Он представляет собой список со ссылками на параграфы статьи"""
 
     __tablename__ = 'articles'
 
