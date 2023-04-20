@@ -13,9 +13,8 @@ function send_delete_signal(local_p_id) {
     $.ajax({
         type: 'POST',
         url: '/DATA_delete_paragraph',
-        data: JSON.stringify({'id': local_p_id}),
-        contentType: 'application/json;charset=UTF-8',
-        success: function() {close_block(local_p_id)}
+        data: JSON.stringify({'paragraph_id': local_p_id, 'article_id': window.location.pathname.slice(1)}),        contentType: 'application/json;charset=UTF-8',
+        complete: function() {close_block(local_p_id)}
     });
 }
 
@@ -109,12 +108,13 @@ function close_block(local_p_id) {
         button.setAttribute('onclick', `return_to_home_page()`);
     }
     else {
-        curr_div.remove()
         let next_block = document.getElementById(`paragraph_${local_p_id + 1}`)
 
-        if (next_block) {
+        if (next_block && curr_div.className == '') {
             next_block.className = ''
         }
+
+        curr_div.remove()
     }
 
     curr_div = document.getElementById(`paragraph_${paragraph_id}`);

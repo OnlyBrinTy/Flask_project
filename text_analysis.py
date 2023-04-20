@@ -12,10 +12,10 @@ def format_html(html):
     soup = BeautifulSoup(html, 'html.parser')
 
     diff_line_num1, diff_line_num2 = soup.find_all('td', class_='diff-line-number')
-    diff_line_num1.replaceWith()
+    diff_line_num1.replaceWith('')
     diff_line_num2.attrs['data-content'] = ''
 
-    soup.find('style').replaceWith()
+    soup.find('style').replaceWith('')
 
     return str(soup).replace('line-height: 1rem;\n  ', '')
 
