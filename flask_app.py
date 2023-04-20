@@ -16,18 +16,27 @@ app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
+# создаём сессию sqlalchemy
 db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
+# инициализируем парсер для сайта republic.ru, с которого берём 10 статей.
+# Также даём ему сессию БД
 parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/<int:article_id>')
 def article_page_load(article_id):
+    """Страница с содержимым статьи"""
+
+    # загружаем содержание статьи (параграфы)
     article = parse_app.get_articles_content(article_id)
 
     if current_user.is_authenticated:
+        # если пользователь уже закрыл какой-то абзац,
+        # то он помечается в маске для этой статьи как 0 и не отображается на странице
         mask = map(int, current_user.masks[article_id - 1].read_par)
 
         article = list(compress(article, mask))
@@ -42,6 +51,9 @@ def article_page_load(article_id):
 
 @app.route('/')
 def home_page_load():
+    """Начальная страница с заголовками статей"""
+
+    # загружаем обложки статей (авторы и названия статей)
     articles_covers = parse_app.load_articles_covers()
     params = {'css_file_name': 'main_page.css',
               'js_file_name': 'main_page.js',
@@ -53,13 +65,17 @@ def home_page_load():
 
 @app.route('/DATA_text_from_speech', methods=['POST'])
 def final_result_load():
+    """Обработка запроса на вывод результата сравнения абзаца с пересказанным текстом"""
+
     if current_user.is_authenticated:
+        # Добавляем 1 к счётчику выполненных заданий если авторизован
         current_user.completed_tasks += 1
 
     req = request.json
     transcript = req['transcript']
     actual_text = req['text']
 
+    # получаем html сравнения от API
     response = post_request(transcript, actual_text)
 
     return response
@@ -68,17 +84,23 @@ def final_result_load():
 @app.route('/DATA_delete_paragraph', methods=['POST'])
 @login_required
 def delete_paragraph_from_article():
+    """Удалить параграф из маски если его закрыл авторизованный пользователь"""
+
     req = request.json
     paragraph_id = req['paragraph_id']
     article_id = int(req['article_id'])
+    deleted_blocks = req['deleted_blocks']
 
+    # обращаемся к маске, относящаяся к его статье
     mask = current_user.masks[article_id - 1]
 
+    # преобразуем строку из 0 и 1 в список
     list_mask = list(mask.read_par)
     ones_indexes = [i for i, n in enumerate(list_mask) if n == '1']
 
-    index = paragraph_id - 1
-    list_mask[ones_indexes[index]] = '0'
+    shift = len(sorted(deleted_blocks)[:deleted_blocks.index(paragraph_id)])
+    index = paragraph_id - 1 - shift
+    list_mask[ones_indexes[index]] = '0'  # отмечаем параграф как выполненный
     mask.read_par = ''.join(list_mask)
 
     db_sess.merge(mask)
@@ -151,6 +173,9 @@ def register():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def go_to_profile():
+    """Профиль пользователя"""
+
+    # загружаем формы для взаимодействия с аккаунтом
     forms = (EditPhoto(), EditPassword(), EditEmail(), LogOut())
     params = {
         'username': current_user.name,
@@ -161,18 +186,22 @@ def go_to_profile():
         'title': 'Профиль'
     }
 
-    if any(map(FlaskForm.validate_on_submit, forms)):
+    if any(map(FlaskForm.validate_on_submit, forms)):   # хоть одна кнопка нажата
         if forms[0].validate_on_submit():
+            # смена фото профиля
             filename = secure_filename(forms[0].change_avatar.data.filename)
+            # загружаем картинку в папку
             forms[0].change_avatar.data.save('static/samples/' + filename)
 
             current_user.avatar_path = filename
         elif forms[1].validate_on_submit():
+            # смена пароля
             if forms[1].new_password.data != forms[1].new_password_again.data:
                 return render_template('profile.html', **params, message2="Пароли не совпадают")
 
             current_user.set_password(forms[1].new_password.data)
         else:
+            # смена почты
             user_with_this_email = db_sess.query(User).filter(User.email == forms[2].email.data).first()
             if user_with_this_email:
                 return render_template('profile.html', **params, message1="Такая почта уже есть")
