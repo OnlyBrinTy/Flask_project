@@ -10,7 +10,7 @@ from data.users import User
 from data.mask import Mask
 from form import RegisterForm, LoginForm, EditPhoto, EditPassword, EditEmail, LogOut
 
-app = Flask(__name__)
+app = Flask('foo')
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -20,12 +20,13 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+# parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/<int:article_id>')
 def article_page_load(article_id):
-    article = parse_app.get_articles_content(article_id)
+    # article = parse_app.get_articles_content(article_id)
+    article = ['dfgadfgadfgadfg', 'fgadgfadfgadfg', 'sdfgadfgadfgadrg', 'dfgadfgadfgadfg', 'fgadgfadfgadfg', 'sdfgadfgadfgadrg']
 
     if current_user.is_authenticated:
         mask = map(int, current_user.masks[article_id - 1].read_par)
@@ -84,6 +85,8 @@ def delete_paragraph_from_article():
     db_sess.merge(mask)
     db_sess.commit()
 
+    print(mask.read_par)
+
     return {}
 
 
@@ -138,7 +141,9 @@ def register():
         db_sess.add(user)
         db_sess.commit()
 
-        for mask_length in parse_app.masks_lengths:
+        masks_lengths = [3, 8, 11, 15, 33, 16, 7, 1, 3, 11]
+
+        for mask_length in masks_lengths:
             db_sess.add(Mask(user_id=user.id, read_par='1' * mask_length))
 
         db_sess.commit()
