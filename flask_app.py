@@ -59,6 +59,7 @@ def delete_paragraph_from_article():
     if current_user.is_authenticated:
         mask = db_sess.query(Mask).filter(Mask.user_id == current_user.id).first()
         mask.read_par = mask.read_par[:paragraph_id - 1] + '1' + mask.read_par[paragraph_id:]
+        mask.article_id = db_sess.query(Paragraph).filter(Paragraph.id == paragraph_id)
         db_sess.commit()
     parse_app.delete_paragraph(paragraph_id)
 

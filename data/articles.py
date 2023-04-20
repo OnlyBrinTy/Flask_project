@@ -14,4 +14,4 @@ class Article(SqlAlchemyBase):
     author = Column(String(), nullable=False, index=True)
 
     paragraphs = orm.relationship("Paragraph")
-    # masks = orm.relationship("Mask")
+    masks = orm.relationship("Mask")

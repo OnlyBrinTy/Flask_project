@@ -6,6 +6,7 @@ from data.articles import Article
 from data.paragraph import Paragraph
 from data.mask import Mask
 from data.users import User
+from flask import *
 
 
 def batched(iterable, n):
@@ -90,7 +91,6 @@ class ParseApp:
             self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
-            user = self.session.query(User).filter()
             self.session.add(article_cover)
             self.session.commit()
 
