@@ -6,7 +6,6 @@ from data.articles import Article
 from data.paragraph import Paragraph
 from data.mask import Mask
 from data.users import User
-from flask import *
 
 
 def batched(iterable, n):
@@ -91,7 +90,6 @@ class ParseApp:
             self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
-            user = self.session.query(User).filter()
             self.session.add(article_cover)
             self.session.commit()
 
@@ -111,18 +109,10 @@ class ParseApp:
         return self.session.query(Article.author, Article.title).all()
 
     def get_articles_content(self, article_id):
-        self.curr_article = self.session.query(Article).get(article_id)
-        self.article_text_chunks = list(map(str, self.curr_article.paragraphs))
+        article = self.session.query(Article).get(article_id)
+        article_text_chunks = list(map(str, article.paragraphs))
 
-        return self.article_text_chunks
-
-    def delete_paragraph(self, paragraph_id):
-        index = paragraph_id - 1
-        self.article_text_chunks[index] = None
-        shift = self.article_text_chunks[:index].count(None)
-
-        # self.session.delete(self.curr_article.paragraphs[index - shift])
-        # self.session.commit()
+        return article_text_chunks
 
     @staticmethod
     def get_last_article(soup):

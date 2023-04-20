@@ -1,3 +1,4 @@
+import sqlalchemy.orm as orm
 import datetime
 from sqlalchemy import orm
 from flask_login import *
@@ -14,6 +15,7 @@ class User(SqlAlchemyBase, UserMixin):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    masks = orm.relationship("Mask")
 
     masks = orm.relationship("Mask")
 

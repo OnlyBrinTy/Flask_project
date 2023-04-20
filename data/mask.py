@@ -7,4 +7,5 @@ class Mask(SqlAlchemyBase):
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
     user_id = Column(Integer(), ForeignKey("users.id"), nullable=False)
+
     read_par = Column(String(), nullable=False)
