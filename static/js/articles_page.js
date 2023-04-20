@@ -1,4 +1,5 @@
 var speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+var deleted_blocks = [];
 var listening_animation;
 var is_recognizing;
 var paragraph_text;
@@ -10,10 +11,15 @@ var curr_div;
 var button;
 
 function send_delete_signal(local_p_id) {
+    deleted_blocks.push(local_p_id)
+
     $.ajax({
         type: 'POST',
         url: '/DATA_delete_paragraph',
-        data: JSON.stringify({'paragraph_id': local_p_id, 'article_id': window.location.pathname.slice(1)}),        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({'paragraph_id': local_p_id,
+        'article_id': window.location.pathname.slice(1),
+        'deleted_blocks': deleted_blocks}),
+        contentType: 'application/json;charset=UTF-8',
         complete: function() {close_block(local_p_id)}
     });
 }

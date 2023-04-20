@@ -10,7 +10,7 @@ from data.users import User
 from data.mask import Mask
 from form import RegisterForm, LoginForm, EditPhoto, EditPassword, EditEmail, LogOut
 
-app = Flask(__name__)
+app = Flask('foo')
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -20,12 +20,13 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+# parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
 
 @app.route('/<int:article_id>')
 def article_page_load(article_id):
-    article = parse_app.get_articles_content(article_id)
+    # article = parse_app.get_articles_content(article_id)
+    article = ['dfgadfgadfgadfg', 'fgadgfadfgadfg', 'sdfgadfgadfgadrg', 'dfgadfgadfgadfg', 'fgadgfadfgadfg', 'sdfgadfgadfgadrg']
 
     if current_user.is_authenticated:
         mask = map(int, current_user.masks[article_id - 1].read_par)
@@ -71,13 +72,15 @@ def delete_paragraph_from_article():
     req = request.json
     paragraph_id = req['paragraph_id']
     article_id = int(req['article_id'])
+    deleted_blocks = req['deleted_blocks']
 
     mask = current_user.masks[article_id - 1]
 
     list_mask = list(mask.read_par)
     ones_indexes = [i for i, n in enumerate(list_mask) if n == '1']
 
-    index = paragraph_id - 1
+    shift = len(sorted(deleted_blocks)[:deleted_blocks.index(paragraph_id)])
+    index = paragraph_id - 1 - shift
     list_mask[ones_indexes[index]] = '0'
     mask.read_par = ''.join(list_mask)
 
@@ -138,7 +141,9 @@ def register():
         db_sess.add(user)
         db_sess.commit()
 
-        for mask_length in parse_app.masks_lengths:
+        masks_lengths = [6, 8, 11, 15, 33, 16, 7, 1, 3, 11]
+
+        for mask_length in masks_lengths:
             db_sess.add(Mask(user_id=user.id, read_par='1' * mask_length))
 
         db_sess.commit()
@@ -152,14 +157,6 @@ def register():
 @login_required
 def go_to_profile():
     forms = (EditPhoto(), EditPassword(), EditEmail(), LogOut())
-    params = {
-        'username': current_user.name,
-        'user_avatar': current_user.avatar_path,
-        'registration_date': current_user.registration_date,
-        'completed_tasks': current_user.completed_tasks,
-        'forms': forms,
-        'title': 'Профиль'
-    }
 
     if any(map(FlaskForm.validate_on_submit, forms)):
         if forms[0].validate_on_submit():
@@ -181,6 +178,15 @@ def go_to_profile():
 
         db_sess.merge(current_user)
         db_sess.commit()
+
+    params = {
+        'username': current_user.name,
+        'user_avatar': current_user.avatar_path,
+        'registration_date': current_user.registration_date,
+        'completed_tasks': current_user.completed_tasks,
+        'forms': forms,
+        'title': 'Профиль'
+    }
 
     return render_template('profile.html', **params)
 

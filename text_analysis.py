@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-URL = 'https://api.diffchecker.com/public/text?output_type=html&email=onlybrinty@mail.ru'
+URL = 'https://api.diffchecker.com/public/text?output_type=html&email=belowzero2009@yandex.ru'
 HEADERS = {
     'Content-type': 'application/json'
 }
@@ -21,10 +21,11 @@ def format_html(html):
 
 
 def post_request(text1, text2):
-    removed_signs = re.sub(r'[^\w\s]', '', text2)
+    removed_signs1 = re.sub(r'[^\w\s]', '', text1).lower()
+    removed_signs2 = re.sub(r'[^\w\s]', '', text2).lower()
 
-    data = {"left": text1,
-            "right": removed_signs,
+    data = {"left": removed_signs1,
+            "right": removed_signs2,
             "diff_level": "word"}
 
     response = requests.post(URL, json=data, headers=HEADERS)
@@ -32,3 +33,5 @@ def post_request(text1, text2):
     formatted_html = format_html(response.text)
 
     return formatted_html
+
+post_request('Привет,', 'привет')
