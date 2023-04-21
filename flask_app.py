@@ -160,6 +160,7 @@ def register():
         db_sess.add(user)
         db_sess.commit()
 
+        # Добавляем маску параграфов для пользователя
         for mask_length in parse_app.masks_lengths:
             db_sess.add(Mask(user_id=user.id, read_par='1' * mask_length))
 
@@ -192,8 +193,7 @@ def go_to_profile():
             filename = secure_filename(forms[0].change_avatar.data.filename)
             # загружаем картинку в папку
             forms[0].change_avatar.data.save('static/samples/' + filename)
-
-            current_user.avatar_path = filename
+            current_user.avatar_path = 'static/samples/' + filename
         elif forms[1].validate_on_submit():
             # смена пароля
             if forms[1].new_password.data != forms[1].new_password_again.data:
