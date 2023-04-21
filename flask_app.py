@@ -193,7 +193,6 @@ def go_to_profile():
             # загружаем картинку в папку
             forms[0].change_avatar.data.save('static/samples/' + filename)
             current_user.avatar_path = 'static/samples/' + filename
-            print(current_user.avatar_path)
         elif forms[1].validate_on_submit():
             # смена пароля
             if forms[1].new_password.data != forms[1].new_password_again.data:
