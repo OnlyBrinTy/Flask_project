@@ -38,7 +38,7 @@ class ParseApp:
             # обновляем указатель номера(id) последней статьи
             self.curr_post_id = self.get_last_article(main_page_soup)
 
-            self.clear_db()
+            # self.clear_db()
             self.masks_lengths = []  # кол-во абзацев для каждой статьи
 
             self.get_content()
@@ -101,14 +101,15 @@ class ParseApp:
             self.masks_lengths.append(len(content))
 
             article_cover = Article(title=title, author=author)
-            self.session.add(article_cover)
-            self.session.commit()
+            # self.session.add(article_cover)
+            # self.session.commit()
 
             for i, paragraph in enumerate(content):
+                pass
                 # добавляем параграфы в отдельную таблицу, которая связана с таблицей articles
-                self.session.add(Paragraph(article_id=article_cover.id, num=i + 1, text=paragraph))
+                # self.session.add(Paragraph(article_id=article_cover.id, num=i + 1, text=paragraph))
 
-            self.session.commit()
+            # self.session.commit()
             articles_added += 1
 
     def clear_db(self):  # отчистка статей для добавления новых
