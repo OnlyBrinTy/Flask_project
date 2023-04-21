@@ -19,9 +19,10 @@ def batched(iterable, n):   # аналог batched из itertools для python 
 class ParseApp:
     update_interval = 86400  # интервал для обновления статей в БД
 
-    def __init__(self, host: str, titles_num: int, session):
+    def __init__(self, host: str, titles_num: int, censorship: bool, session):
         self.host = host
         self.titles_num = titles_num
+        self.censorship = censorship  # при включённой цензуре загрузка занимает намного больше времени
         self.session = session
 
         self.timer = 0
@@ -79,6 +80,16 @@ class ParseApp:
 
             return chunks
 
+        def censor_article(paragraphs):
+            """Пропустить слишком политизированные статьи"""
+
+            text = ''.join(paragraphs).lower()
+            cense_words = ['украин', 'войн', 'полит', 'власт', 'путин']
+
+            for word in cense_words:
+                if word in text:
+                    return True
+
         while articles_added < self.titles_num:  # пытаемся достать статьи пока не наберётся 10
             article_url = f'{self.host}/posts/{self.curr_post_id}'
             article_html = self.get_html(article_url)  # получаем html статьи
@@ -97,6 +108,9 @@ class ParseApp:
                 author = 'Нет автора'
 
             content = get_content(article_soup, self.chunk_size)
+
+            if censor_article(content):
+                continue
 
             self.masks_lengths.append(len(content))
 

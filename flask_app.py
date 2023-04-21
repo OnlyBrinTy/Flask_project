@@ -22,9 +22,9 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-# инициализируем парсер для сайта republic.ru, с которого берём 10 статей.
+# инициализируем парсер для сайта republic.ru, с которого берём 10 статей с цензурой.
 # Также даём ему сессию БД
-parse_app = ParseApp('https://republic.ru', 10, db_sess)
+parse_app = ParseApp('https://republic.ru', 10, True, db_sess)
 
 
 @app.route('/<int:article_id>')
@@ -207,6 +207,16 @@ def go_to_profile():
                 return render_template('profile.html', **params, message1="Такая почта уже есть")
 
             current_user.email = forms[2].email.data
+
+        # загружаем параметры ещё раз на случай если что-то поменяется
+        params = {
+            'username': current_user.name,
+            'user_avatar': current_user.avatar_path,
+            'registration_date': current_user.registration_date,
+            'completed_tasks': current_user.completed_tasks,
+            'forms': forms,
+            'title': 'Профиль'
+        }
 
         db_sess.merge(current_user)
         db_sess.commit()
