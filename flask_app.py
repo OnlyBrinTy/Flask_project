@@ -18,11 +18,11 @@ login_manager.init_app(app)
 
 
 # создаём сессию sqlalchemy
-db_name = "db/database.db"
+db_name = "db/database (1).db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-# инициализируем парсер для сайта republic.ru, с которого берём 10 статей.
+# Инициализируем парсер для сайта republic.ru, с которого берём 10 статей.
 # Также даём ему сессию БД
 parse_app = ParseApp('https://republic.ru', 10, db_sess)
 
@@ -158,6 +158,7 @@ def register():
         db_sess.add(user)
         db_sess.commit()
 
+        # Добавляем маску параграфов для пользователя
         for mask_length in parse_app.masks_lengths:
             db_sess.add(Mask(user_id=user.id, read_par='1' * mask_length))
 
@@ -188,10 +189,11 @@ def go_to_profile():
         if forms[0].validate_on_submit():
             # смена фото профиля
             filename = secure_filename(forms[0].change_avatar.data.filename)
+
             # загружаем картинку в папку
             forms[0].change_avatar.data.save('static/samples/' + filename)
-
-            current_user.avatar_path = filename
+            current_user.avatar_path = 'static/samples/' + filename
+            print(current_user.avatar_path)
         elif forms[1].validate_on_submit():
             # смена пароля
             if forms[1].new_password.data != forms[1].new_password_again.data:
