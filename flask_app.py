@@ -10,7 +10,7 @@ from data.users import User
 from data.mask import Mask
 from form import RegisterForm, LoginForm, EditPhoto, EditPassword, EditEmail, LogOut
 
-app = Flask(__name__)
+app = Flask('foo')
 app.config['SECRET_KEY'] = 'memorizeme_secret_key'
 
 login_manager = LoginManager()
@@ -22,9 +22,9 @@ db_name = "db/database.db"
 db_session.global_init(db_name)
 db_sess = db_session.create_session()
 
-# инициализируем парсер для сайта republic.ru, с которого берём 10 статей с цензурой.
+# инициализируем парсер для сайта republic.ru, с которого берём 10 статей.
 # Также даём ему сессию БД
-parse_app = ParseApp('https://republic.ru', 10, True, db_sess)
+parse_app = ParseApp('https://republic.ru', 10, False, db_sess)
 
 
 @app.route('/<int:article_id>')
@@ -193,7 +193,7 @@ def go_to_profile():
             filename = secure_filename(forms[0].change_avatar.data.filename)
             # загружаем картинку в папку
             forms[0].change_avatar.data.save('static/samples/' + filename)
-            current_user.avatar_path = 'static/samples/' + filename
+            current_user.avatar_path = filename
         elif forms[1].validate_on_submit():
             # смена пароля
             if forms[1].new_password.data != forms[1].new_password_again.data:

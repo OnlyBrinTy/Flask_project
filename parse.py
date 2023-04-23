@@ -7,6 +7,12 @@ from data.paragraph import Paragraph
 from data.mask import Mask
 from data.users import User
 
+# файл proxies.txt взят с https://free-proxy-list.net
+proxies = {
+    'http': 'http://10.10.10.10:8000',
+    'https': 'http://10.10.10.10:8000',
+}
+
 
 def batched(iterable, n):   # аналог batched из itertools для python 3.12
     i = iter(iterable)
@@ -109,7 +115,7 @@ class ParseApp:
 
             content = get_content(article_soup, self.chunk_size)
 
-            if censor_article(content):
+            if self.censorship and censor_article(content):
                 continue
 
             self.masks_lengths.append(len(content))
@@ -149,4 +155,20 @@ class ParseApp:
 
     @staticmethod
     def get_html(url):
-        return requests.get(url)
+        while True:
+            try:
+                return requests.get(url, headers={'User-Agent': 'Chrome'}, proxies=proxies, verify=False)
+            except requests.exceptions.ConnectionError:
+                proxy_list = open('proxies.txt').readlines()
+
+                prox1, prox2 = proxy_list[0].replace('\n', ''), proxy_list[1].replace('\n', '')
+
+                proxies['http'] = f"http://{prox1}"
+                proxies['https'] = f"http://{prox2}"
+
+                print(f'смена прокси на {proxies}')
+
+                try:
+                    return requests.get(url, headers={'User-Agent': 'Chrome'}, proxies=proxies, verify=False)
+                except requests.exceptions.ConnectionError:
+                    open('proxies.txt', 'w').writelines(proxy_list[2:])
